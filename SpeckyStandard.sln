@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2035
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpeckyStandard", "SpeckyStandard\SpeckyStandard.csproj", "{80D0A85B-BF23-473F-9ED3-A759E3481F09}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{80D0A85B-BF23-473F-9ED3-A759E3481F09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80D0A85B-BF23-473F-9ED3-A759E3481F09}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80D0A85B-BF23-473F-9ED3-A759E3481F09}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80D0A85B-BF23-473F-9ED3-A759E3481F09}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E08102F6-9A7E-4F28-80B6-67664D75B7F4}
+	EndGlobalSection
+EndGlobal
