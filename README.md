@@ -1,7 +1,8 @@
 # SpeckyStandard
 .NET Standard project to assist with DI, MVVM, XAML, and more...
 
-At first commit example of using dependency injection:
+-- WPF EXAMPLE: --
+Below is a first commit example of using dependency injection:
 In this example we make 3 different types, 1 interface and 2 models of the interface.
 See the various ways that injection is annotated on the types.
 
@@ -58,7 +59,7 @@ See the various ways that injection is annotated on the types.
         [AutoSpeck] // Intializes SecondTestType via SecondTestType dependency.
         public SecondTestType SecondTestType
         {
-            get { return secondTestType; }
+            get => secondTestType;
             set
             {
                 secondTestType = value;
