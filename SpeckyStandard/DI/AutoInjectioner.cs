@@ -67,6 +67,7 @@ namespace SpeckyStandard.DI
 
             foreach (var speckProperty in speckProperties)
             {
+                if (!speckProperty.CanWrite) throw new Exception($"Readonly properties cannot be instialized via {nameof(AutoSpeckAttribute)}.  Try giving the property a private setter.\nThrow on {nameof(speckProperty.Name)}");
                 speckProperty.SetValue(formattedObject, Injection.Instance.GetInstance(speckProperty.PropertyType));
             }
 
