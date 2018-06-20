@@ -9,10 +9,10 @@ using System.Runtime.Serialization;
 
 namespace SpeckyStandard.DI
 {
-    internal class AutoInjectioner
+    internal class InjectionWorker
     {
         private readonly Assembly CallindAssembly;
-        internal AutoInjectioner(Assembly callingAssembly) => CallindAssembly = callingAssembly;
+        internal InjectionWorker(Assembly callingAssembly) => CallindAssembly = callingAssembly;
 
         internal void Start()
         {
@@ -21,12 +21,12 @@ namespace SpeckyStandard.DI
             InjectOrderedSpecks(speckTypes);
         }
 
-        private static void InjectOrderedSpecks(IEnumerable<Type> speckTypes)
+        private void InjectOrderedSpecks(IEnumerable<Type> speckTypes)
         {
             var formattersStillAwaitingConstruction = new List<object>();
             foreach (var speckType in speckTypes)
             {
-                var knownSpeck = Injection.Instance.GetInstance(speckType, false)?.GetType();
+                var knownSpeck = SpeckContainer.Instance.GetInstance(speckType, false)?.GetType();
 
                 var speckAttribute = speckType.GetAttribute<SpeckAttribute>();
                 var injectionMode = speckAttribute?.InjectionMode ?? InjectionMode.Singleton;
@@ -42,24 +42,24 @@ namespace SpeckyStandard.DI
             }
         }
 
-        private static void InjectFullSpeck(Type speckType, InjectionMode injectionMode)
+        private void InjectFullSpeck(Type speckType, InjectionMode injectionMode)
         {
             switch (injectionMode)
             {
                 case InjectionMode.Singleton:
                     if (speckType.IsInterface) break;
                     var speckAttribute = speckType.GetAttribute<SpeckAttribute>();
-                    Injection.Instance.InjectSingleton(speckType, speckAttribute?.ReferencedType);
+                    SpeckContainer.Instance.InjectSingleton(speckType, speckAttribute?.ReferencedType);
                     break;
                 case InjectionMode.PerRequest:
-                    Injection.Instance.InjectType(speckType);
+                    SpeckContainer.Instance.InjectType(speckType);
                     break;
                 default:
                     throw new Exception($"Unknown {nameof(InjectionMode)}");
             }
         }
 
-        private static void InjectPartialSpeck(List<object> formattersStillAwaitingConstruction, Type speckType, InjectionMode injectionMode)
+        private void InjectPartialSpeck(List<object> formattersStillAwaitingConstruction, Type speckType, InjectionMode injectionMode)
         {
             var formattedObject = FormatterServices.GetUninitializedObject(speckType);
 
@@ -68,14 +68,14 @@ namespace SpeckyStandard.DI
             foreach (var speckProperty in speckProperties)
             {
                 if (!speckProperty.CanWrite) throw new Exception($"Readonly properties cannot be instialized via {nameof(AutoSpeckAttribute)}.  Try giving the property a private setter.\nThrow on {nameof(speckProperty.Name)}");
-                speckProperty.SetValue(formattedObject, Injection.Instance.GetInstance(speckProperty.PropertyType));
+                speckProperty.SetValue(formattedObject, SpeckContainer.Instance.GetInstance(speckProperty.PropertyType));
             }
 
             var speckFields = speckType.GetAutoSpeckFields();
 
             foreach (var speckField in speckFields)
             {
-                speckField.SetValue(formattedObject, Injection.Instance.GetInstance(speckField.FieldType));
+                speckField.SetValue(formattedObject, SpeckContainer.Instance.GetInstance(speckField.FieldType));
             }
 
             formattersStillAwaitingConstruction.Add(formattedObject);
@@ -88,7 +88,7 @@ namespace SpeckyStandard.DI
             formattedObject.GetType().GetConstructor(Type.EmptyTypes).Invoke(formattedObject, null);
 
             var speckAttribute = speckType.GetAttribute<SpeckAttribute>();
-            Injection.Instance.InjectSingleton(formattedObject, speckAttribute?.ReferencedType);
+            SpeckContainer.Instance.InjectSingleton(formattedObject, speckAttribute?.ReferencedType);
         }
     }
 }

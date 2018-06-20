@@ -3,6 +3,9 @@ using System;
 
 namespace SpeckyStandard.Attributes
 {
+    /// <summary>
+    /// Injects a class as a Speck dependency
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     public class SpeckAttribute : Attribute
     {

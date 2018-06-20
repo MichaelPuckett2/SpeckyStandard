@@ -5,13 +5,21 @@ using System.Linq;
 
 namespace SpeckyStandard.DI
 {
-    public class Injection
+    /// <summary>
+    /// The Speck container that is used to store and reference existing specks.
+    /// </summary>
+    public class SpeckContainer
     {
         internal HashSet<InjectionModel> Singletons { get; } = new HashSet<InjectionModel>();
 
-        Injection() { }
-        static public Injection Instance { get; } = new Injection();
+        SpeckContainer() { }
+        static public SpeckContainer Instance { get; } = new SpeckContainer();
 
+        /// <summary>
+        /// Retrieves a Speck via the T type used for lookup.
+        /// </summary>
+        /// <typeparam name="T">The type of Speck to retrieve</typeparam>
+        /// <returns>Returns initialied Speck or throws exception is no Speck is of the requested type.</returns>
         public T GetInstance<T>() => (T)GetInstance(typeof(T));
 
         internal void InjectSingleton(Type type, Type referencedType)

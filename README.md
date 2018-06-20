@@ -101,9 +101,8 @@ See the various ways that injection is annotated on the types.
     {
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            AutomaticInjection.Start();
-            //Set MainWindow mannually with dependency.
-            Current.MainWindow = Injection.Instance.GetInstance<MainWindow>();
+            SpeckAutoStrapper.Start();
+            Current.MainWindow = SpeckContainer.Instance.GetInstance<MainWindow>();
             Current.MainWindow.Show();
         }
     }
