@@ -2,7 +2,7 @@
 
 namespace SpeckyStandard.Extensions
 {
-    public static class PrimitiveExtensions
+    public static class BooleanExtensions
     {
         /// <summary>
         /// Invokes an action when boolean is true.
