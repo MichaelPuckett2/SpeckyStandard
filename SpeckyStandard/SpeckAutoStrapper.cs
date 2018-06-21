@@ -1,6 +1,7 @@
-﻿using System.Reflection;
+﻿using SpeckyStandard.DI;
+using System.Reflection;
 
-namespace SpeckyStandard.DI
+namespace SpeckyStandard
 {
     /// <summary>
     /// Straps the application and injects all dependencies.
@@ -8,15 +9,15 @@ namespace SpeckyStandard.DI
     /// </summary>
     public static class SpeckAutoStrapper
     {
-        static volatile bool InjectionStarted = false;
+        static volatile bool IsStrappingStarted = false;
 
         /// <summary>
         /// Starts the strapping and injection process.
         /// </summary>
         public static void Start()
         {
-            if (InjectionStarted) return;
-            InjectionStarted = true;
+            if (IsStrappingStarted) return;
+            IsStrappingStarted = true;
             var callingAssembly = Assembly.GetCallingAssembly();
             new InjectionWorker(callingAssembly).Start();
         }
