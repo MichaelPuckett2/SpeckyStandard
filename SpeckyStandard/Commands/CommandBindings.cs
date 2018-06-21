@@ -4,7 +4,7 @@ using System.ComponentModel;
 
 namespace SpeckyStandard.Commands
 {
-    public class CommandBindings : IDisposable
+    public sealed class CommandBindings : IDisposable
     {
         public Action<object> ExecuteAction { get; set; }
         public List<Predicate<object>> CanExecutePredicates { get; set; }

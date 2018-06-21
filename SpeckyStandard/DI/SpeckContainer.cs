@@ -8,7 +8,7 @@ namespace SpeckyStandard.DI
     /// <summary>
     /// The Speck container that is used to store and reference existing specks.
     /// </summary>
-    public class SpeckContainer
+    public sealed class SpeckContainer
     {
         internal HashSet<InjectionModel> InjectionModels { get; } = new HashSet<InjectionModel>();
 

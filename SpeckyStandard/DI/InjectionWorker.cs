@@ -9,7 +9,7 @@ using System.Runtime.Serialization;
 
 namespace SpeckyStandard.DI
 {
-    internal class InjectionWorker
+    internal sealed class InjectionWorker
     {
         private readonly Assembly CallindAssembly;
         internal InjectionWorker(Assembly callingAssembly) => CallindAssembly = callingAssembly;

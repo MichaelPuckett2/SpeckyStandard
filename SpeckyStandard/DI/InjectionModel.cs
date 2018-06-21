@@ -3,7 +3,7 @@ using System;
 
 namespace SpeckyStandard.DI
 {
-    internal class InjectionModel
+    internal sealed class InjectionModel
     {
         internal InjectionModel(Type type, object instantiatedObject)
         {

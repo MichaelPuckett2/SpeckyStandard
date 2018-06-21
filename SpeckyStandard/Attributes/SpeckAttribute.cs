@@ -7,7 +7,7 @@ namespace SpeckyStandard.Attributes
     /// Injects a class as a Speck dependency
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
-    public class SpeckAttribute : Attribute
+    public sealed class SpeckAttribute : Attribute
     {
         public InjectionMode InjectionMode { get; }
         public Type ReferencedType { get; }
