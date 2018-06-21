@@ -59,9 +59,9 @@ namespace SpeckyStandard.Extensions
         }
 
         /// <summary>
-        /// 
+        /// Invokes seperate predicates when boolean is true or false.
         /// </summary>
-        /// <param name="boolean">Invokes seperate predicates when boolean is true or false.</param>
+        /// <param name="boolean"></param>
         /// <param name="truePredicate">Predicate to invoke when boolean is true.</param>
         /// <param name="falsePredicate">Predicate to invoke when boolean is false.</param>
         /// <returns>Returns the result of the invoked predicate.</returns>
