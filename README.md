@@ -1,7 +1,8 @@
 # SpeckyStandard
 .NET Standard project to assist with DI, MVVM, XAML, and more...
 
-At first commit example of using dependency injection:
+-- WPF EXAMPLE: --
+Below is a first commit example of using dependency injection:
 In this example we make 3 different types, 1 interface and 2 models of the interface.
 See the various ways that injection is annotated on the types.
 
@@ -16,7 +17,8 @@ See the various ways that injection is annotated on the types.
         string Name { get; }
     }
 
-    [Speck(typeof(ITestType))] // Inject the dependency as FirstTestType and ITestType and is registered as single instance.
+    // Inject the dependency as FirstTestType and ITestType and is registered as single instance.
+    [Speck(typeof(ITestType))] 
     public class FirstTestType : ITestType
     {
         static int IdCounter;
@@ -24,10 +26,12 @@ See the various ways that injection is annotated on the types.
         public string Name { get; set; } = "Mathew " + IdCounter;
     }
     
-    [Speck] // Inject the dependency as SecondTestType and is registered as single instance.
+    // Inject the dependency as SecondTestType and is registered as single instance.
+    [Speck] 
     public class SecondTestType : ITestType
     {
-        [AutoSpeck] // Intializes FirstTestType via FirstTestType dependency.
+        // Intializes FirstTestType via FirstTestType dependency.
+        [AutoSpeck] 
         public FirstTestType FirstTestType { get; set; }
 
         public int Id => FirstTestType.Id;
@@ -36,10 +40,12 @@ See the various ways that injection is annotated on the types.
     
     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     
-    [Speck] // Inject the dependency as TestTypeViewModel and is registered as single instance.
+    // Inject the dependency as TestTypeViewModel and is registered as single instance.
+    [Speck] 
     public class TestTypeViewModel : NotifyBase
     {
-        [AutoSpeck] // Intializes firstTestType via FirstTestType dependency.
+        // Intializes firstTestType via FirstTestType dependency.
+        [AutoSpeck] 
         private FirstTestType firstTestType;
         
         private SecondTestType secondTestType;
@@ -55,10 +61,11 @@ See the various ways that injection is annotated on the types.
             }
         }
 
-        [AutoSpeck] // Intializes SecondTestType via SecondTestType dependency.
+        // Intializes SecondTestType via SecondTestType dependency.
+        [AutoSpeck] 
         public SecondTestType SecondTestType
         {
-            get { return secondTestType; }
+            get => secondTestType;
             set
             {
                 secondTestType = value;
@@ -66,7 +73,8 @@ See the various ways that injection is annotated on the types.
             }
         }
 
-        [AutoSpeck] // Intializes ThirdTestType via ITestType dependency.
+        // Intializes ThirdTestType via ITestType dependency.
+        [AutoSpeck] 
         public ITestType ThirdTestType
         {
             get => thirdTestType;
@@ -80,11 +88,12 @@ See the various ways that injection is annotated on the types.
     
     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     
-    
-    [Speck] // Inject the dependency as MainWindow and is registered as single instance.
+    // Inject the dependency as MainWindow and is registered as single instance.
+    [Speck] 
     public partial class MainWindow : Window
     {
-        [AutoSpeck] // Intializes ThirdTestType via TestTypeViewModel dependency.
+        // Intializes ThirdTestType via TestTypeViewModel dependency.
+        [AutoSpeck] 
         public TestTypeViewModel TestTypeViewModel { get; private set; }
 
         public MainWindow()
