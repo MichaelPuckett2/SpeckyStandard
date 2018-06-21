@@ -10,7 +10,7 @@ namespace SpeckyStandard.DI
     /// </summary>
     public class SpeckContainer
     {
-        internal HashSet<InjectionModel> Singletons { get; } = new HashSet<InjectionModel>();
+        internal HashSet<InjectionModel> InjectionModels { get; } = new HashSet<InjectionModel>();
 
         SpeckContainer() { }
         static public SpeckContainer Instance { get; } = new SpeckContainer();
@@ -28,14 +28,14 @@ namespace SpeckyStandard.DI
                                      type: type, 
                                      referencedType: referencedType);
 
-            Singletons.Add(injectionModel);
+            InjectionModels.Add(injectionModel);
         }
 
         internal void InjectSingleton(object formattedObject, Type referencedType)
         {
             var type = formattedObject.GetType();
             var injectionModel = new InjectionModel(type, formattedObject);
-            Singletons.Add(injectionModel);
+            InjectionModels.Add(injectionModel);
         }
 
         internal void InjectType<T>() => InjectType(typeof(T));
@@ -46,12 +46,12 @@ namespace SpeckyStandard.DI
                                      type: type,
                                      injectionMode: InjectionMode.PerRequest);
 
-            Singletons.Add(injectionModel);
+            InjectionModels.Add(injectionModel);
         }
 
         internal object GetInstance(Type type, bool throwable = true)
         {
-            var injectionModel = Singletons.FirstOrDefault(model => model.Type == type || model.ReferencedType == type);
+            var injectionModel = InjectionModels.FirstOrDefault(model => model.Type == type || model.ReferencedType == type);
 
             switch (injectionModel?.InjectionMode)
             {
@@ -70,6 +70,13 @@ namespace SpeckyStandard.DI
                         return null;
                     }
             }
+        }
+
+        ~SpeckContainer()
+        {
+            foreach (var injectionModel in InjectionModels)
+                if (injectionModel.Instance is IDisposable disposable)
+                    disposable.Dispose();
         }
     }
 }
