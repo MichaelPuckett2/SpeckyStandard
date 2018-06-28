@@ -1,4 +1,5 @@
 ﻿using SpeckyStandard.Enums;
+using SpeckyStandard.Extensions;
 using System;
 
 namespace SpeckyStandard.DI
@@ -9,16 +10,16 @@ namespace SpeckyStandard.DI
         {
             Type = type;
             ReferencedType = type;
-            InjectionMode = InjectionMode.Singleton;
+            InjectionMode = Instantiation.Singleton;
             Instance = instantiatedObject;
         }
 
-        internal InjectionModel(Type type, InjectionMode injectionMode, params object[] parameters)
+        internal InjectionModel(Type type, Instantiation injectionMode, params object[] parameters)
         {
             Type = type;
             ReferencedType = type;
             InjectionMode = injectionMode;
-            Instance = InjectionMode == InjectionMode.Singleton
+            Instance = InjectionMode == Instantiation.Singleton
                      ? Activator.CreateInstance(Type, parameters)
                      : null;
         }
@@ -27,8 +28,8 @@ namespace SpeckyStandard.DI
         {
             Type = type;
             ReferencedType = referencedType;
-            InjectionMode = InjectionMode.Singleton;
-            Instance = InjectionMode == InjectionMode.Singleton
+            InjectionMode = Instantiation.Singleton;
+            Instance = InjectionMode == Instantiation.Singleton
                      ? Activator.CreateInstance(Type, parameters)
                      : null;
         }
@@ -36,6 +37,7 @@ namespace SpeckyStandard.DI
         internal Type Type { get; }
         internal object Instance { get; }
         internal Type ReferencedType { get; }
-        internal InjectionMode InjectionMode { get; }
+        internal Instantiation InjectionMode { get; }
+        internal T GetAttribute<T>() where T : Attribute => Type.GetAttribute<T>() ?? ReferencedType.GetAttribute<T>();
     }
 }

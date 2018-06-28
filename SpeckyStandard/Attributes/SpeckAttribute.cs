@@ -9,10 +9,10 @@ namespace SpeckyStandard.Attributes
     [AttributeUsage(AttributeTargets.Class)]
     public sealed class SpeckAttribute : Attribute
     {
-        public InjectionMode InjectionMode { get; }
+        public Instantiation InjectionMode { get; }
         public Type ReferencedType { get; }
 
-        public SpeckAttribute(InjectionMode injectionMode = InjectionMode.Singleton)
+        public SpeckAttribute(Instantiation injectionMode = Instantiation.Singleton)
         {
             InjectionMode = injectionMode;
             ReferencedType = null;
@@ -20,7 +20,7 @@ namespace SpeckyStandard.Attributes
 
         public SpeckAttribute(Type referencedType)
         {
-            InjectionMode = InjectionMode.Singleton;
+            InjectionMode = Instantiation.Singleton;
             ReferencedType = referencedType;
         }
     }

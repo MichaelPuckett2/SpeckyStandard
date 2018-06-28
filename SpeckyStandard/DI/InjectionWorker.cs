@@ -29,7 +29,7 @@ namespace SpeckyStandard.DI
                 var knownSpeck = SpeckContainer.Instance.GetInstance(speckType, false)?.GetType();
 
                 var speckAttribute = speckType.GetAttribute<SpeckAttribute>();
-                var injectionMode = speckAttribute?.InjectionMode ?? InjectionMode.Singleton;
+                var injectionMode = speckAttribute?.InjectionMode ?? Instantiation.Singleton;
 
                 if (speckType.HasSpeckDependencies())
                 {
@@ -42,24 +42,24 @@ namespace SpeckyStandard.DI
             }
         }
 
-        private void InjectFullSpeck(Type speckType, InjectionMode injectionMode)
+        private void InjectFullSpeck(Type speckType, Instantiation injectionMode)
         {
             switch (injectionMode)
             {
-                case InjectionMode.Singleton:
+                case Instantiation.Singleton:
                     if (speckType.IsInterface) break;
                     var speckAttribute = speckType.GetAttribute<SpeckAttribute>();
                     SpeckContainer.Instance.InjectSingleton(speckType, speckAttribute?.ReferencedType);
                     break;
-                case InjectionMode.PerRequest:
+                case Instantiation.PerRequest:
                     SpeckContainer.Instance.InjectType(speckType);
                     break;
                 default:
-                    throw new Exception($"Unknown {nameof(InjectionMode)}");
+                    throw new Exception($"Unknown {nameof(Instantiation)}");
             }
         }
 
-        private void InjectPartialSpeck(List<object> formattersStillAwaitingConstruction, Type speckType, InjectionMode injectionMode)
+        private void InjectPartialSpeck(List<object> formattersStillAwaitingConstruction, Type speckType, Instantiation injectionMode)
         {
             var formattedObject = FormatterServices.GetUninitializedObject(speckType);
 
@@ -80,9 +80,9 @@ namespace SpeckyStandard.DI
 
             formattersStillAwaitingConstruction.Add(formattedObject);
 
-            if (injectionMode != InjectionMode.Singleton)
+            if (injectionMode != Instantiation.Singleton)
             {
-                throw new Exception($"Specks containing auto specks can only use default {nameof(InjectionMode)}.{nameof(InjectionMode.Singleton)}\n{formattedObject.GetType().Name} is set as {nameof(InjectionMode)}.{injectionMode.ToString()}");
+                throw new Exception($"Specks containing auto specks can only use default {nameof(Instantiation)}.{nameof(Instantiation.Singleton)}\n{formattedObject.GetType().Name} is set as {nameof(Instantiation)}.{injectionMode.ToString()}");
             }
 
             formattedObject.GetType().GetConstructor(Type.EmptyTypes).Invoke(formattedObject, null);
