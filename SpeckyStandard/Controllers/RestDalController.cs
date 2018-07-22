@@ -13,13 +13,13 @@ namespace SpeckyStandard.Controllers
     {
         private bool isStarted;
         private bool canContinue;
+        public event EventHandler Started;
+        public event EventHandler Stopped;
+
         private List<SpeckDal<RestDalAttribute>> RestSpeckDals { get; } = new List<SpeckDal<RestDalAttribute>>();
 
         private RestDalController() { }
         public static RestDalController Instance { get; } = new RestDalController();
-
-        public event EventHandler Started;
-        public event EventHandler Stopped;
 
         public bool IsStarted
         {
