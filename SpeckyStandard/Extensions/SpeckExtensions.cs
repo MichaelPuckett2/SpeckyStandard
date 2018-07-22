@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 namespace SpeckyStandard.Extensions
 {
@@ -39,6 +40,8 @@ namespace SpeckyStandard.Extensions
 
         internal static List<Type> DependantSpecks(this IEnumerable<Type> speckTypes)
         {
+            ThrowForNestedDependencies(speckTypes);
+
             var dependantPropertyTypes = speckTypes
                                         .SelectMany(type => type.GetProperties())
                                         .Where(prop => prop.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null)
@@ -58,24 +61,34 @@ namespace SpeckyStandard.Extensions
             return dependantPropertyTypes.Concat(dependantFieldTypes).Concat(dependantParameterTypes).Distinct().ToList();
         }
 
+        private static void ThrowForNestedDependencies(IEnumerable<Type> speckTypes)
+        {
+            var nestedSpecks = speckTypes.Where(speckType 
+                            => speckType.GetProperties().Where(prop => prop.GetCustomAttribute<AutoSpeckAttribute>() != null).Any(prop => prop.PropertyType == speckType)
+                            || speckType.GetFields().Where(field => field.GetCustomAttribute<AutoSpeckAttribute>() != null).Any(field => field.FieldType == speckType)
+                            || speckType.GetMethods().SelectMany(method => method.GetParameters().Where(param => param.GetCustomAttribute<AutoSpeckAttribute>() != null)).Any(param => param.ParameterType == speckType));
+
+            if (nestedSpecks.Any())
+            {
+                var stringBuilder = new StringBuilder();
+                stringBuilder.AppendLine("You cannot nest a Speck of the same type within itself.");
+                stringBuilder.AppendLine("The following nested Specks were found:");
+
+                foreach (var type in nestedSpecks) stringBuilder.AppendLine($"{type.Name}");
+
+                throw new Exception(stringBuilder.ToString());
+            }
+        }
+
         internal static List<Type> GetDependencyOrderedSpecks(this IEnumerable<Type> speckTypes)
         {
             var orderedDependencies = new List<Type>();
-            var dependantTypes = speckTypes.DependantSpecks();
-            var hasInnerDependencies = dependantTypes.Any();
+            var dependantSpecks = speckTypes.DependantSpecks();
+            var hasInnerDependencies = dependantSpecks.Any();
 
             if (hasInnerDependencies)
             {
-                //var illegalDependants = dependantTypes.Where(type => type.GetCustomAttribute<SpeckAttribute>() == null);
-
-                //if (illegalDependants.Any())
-                //{
-                //    var stringBuilder = new StringBuilder();
-                //    foreach (var type in illegalDependants) stringBuilder.AppendLine(type.Name);
-                //    throw new Exception($"The following types are given the {nameof(AutoSpeckAttribute)} but are not covered by the {nameof(SpeckAttribute)}\n{stringBuilder.ToString()}");
-                //}
-
-                var innerDependencies = GetDependencyOrderedSpecks(dependantTypes);
+                var innerDependencies = GetDependencyOrderedSpecks(dependantSpecks);
                 orderedDependencies.AddRange(innerDependencies);
             }
 
