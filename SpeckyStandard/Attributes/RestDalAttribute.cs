@@ -2,18 +2,15 @@
 
 namespace SpeckyStandard.Attributes
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
-    public sealed class RestDalAttribute : DalBaseAttribute
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    public class RestDalAttribute : Attribute
     {
         public string Url { get; }
-        public int Interval { get; }
 
-        public RestDalAttribute(string url) : this(url, 0) { }
-
-        public RestDalAttribute(string url, int interval) 
+        public RestDalAttribute() { }
+        public RestDalAttribute(string url)
         {
-            Url = url;
-            Interval = interval;
+            Url = url ?? string.Empty;
         }
     }
 }

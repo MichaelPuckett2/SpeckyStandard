@@ -1,4 +1,5 @@
-﻿using SpeckyStandard.DI;
+﻿using SpeckyStandard.Controllers;
+using SpeckyStandard.DI;
 using System.Reflection;
 
 namespace SpeckyStandard
@@ -20,6 +21,7 @@ namespace SpeckyStandard
             IsStrappingStarted = true;
             var callingAssembly = Assembly.GetCallingAssembly();
             new InjectionWorker(callingAssembly).Start();
+            new ControllerBuilder().Start();
         }
     }
 }

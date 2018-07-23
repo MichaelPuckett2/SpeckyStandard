@@ -15,7 +15,7 @@ namespace SpeckyStandard.Extensions
         /// <returns>IEnumerable<Type> of types that have the T attribute.</returns>
         public static IEnumerable<Type> TypesWithAttribute<T>(this Assembly assembly) where T : Attribute
         {
-            return assembly.GetTypes().Where(x => x.GetCustomAttribute<T>() != null);
+            return assembly.GetTypes().Where(x => x.GetCustomAttribute<T>(true) != null);
         }
     }
 }

@@ -15,13 +15,6 @@ namespace SpeckyStandard.DI
         SpeckContainer() { }
         static public SpeckContainer Instance { get; } = new SpeckContainer();
 
-        /// <summary>
-        /// Retrieves a Speck via the T type used for lookup.
-        /// </summary>
-        /// <typeparam name="T">The type of Speck to retrieve</typeparam>
-        /// <returns>Returns initialied Speck or throws exception is no Speck is of the requested type.</returns>
-        public T GetInstance<T>() => (T)GetInstance(typeof(T));
-
         internal void InjectSingleton(Type type, Type referencedType)
         {
             var injectionModel = new InjectionModel(
@@ -48,6 +41,13 @@ namespace SpeckyStandard.DI
 
             InjectionModels.Add(injectionModel);
         }
+
+        /// <summary>
+        /// Retrieves a Speck via the T type used for lookup.
+        /// </summary>
+        /// <typeparam name="T">The type of Speck to retrieve</typeparam>
+        /// <returns>Returns initialied Speck or throws exception is no Speck is of the requested type.</returns>
+        public T GetInstance<T>(bool throwable = true) => (T)GetInstance(typeof(T), throwable);
 
         internal object GetInstance(Type type, bool throwable = true)
         {

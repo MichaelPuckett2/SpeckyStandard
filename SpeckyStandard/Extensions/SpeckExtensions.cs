@@ -10,9 +10,15 @@ namespace SpeckyStandard.Extensions
     internal static class SpeckExtensions
     {
         internal static BindingFlags BindingFlag = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-        internal static T GetAttribute<T>(this Type type) where T : Attribute
+
+        public static T GetAttribute<T>(this Type type) where T : Attribute
         {
             return (T)type.GetCustomAttribute(typeof(T));
+        }
+
+        public static T GetAttribute<T>(this PropertyInfo propertyInfo) where T : Attribute
+        {
+            return (T)propertyInfo.GetCustomAttribute(typeof(T));
         }
 
         internal static bool HasSpeckDependencies(this Type speckType)
@@ -61,25 +67,6 @@ namespace SpeckyStandard.Extensions
             return dependantPropertyTypes.Concat(dependantFieldTypes).Concat(dependantParameterTypes).Distinct().ToList();
         }
 
-        private static void ThrowForNestedDependencies(IEnumerable<Type> speckTypes)
-        {
-            var nestedSpecks = speckTypes.Where(speckType 
-                            => speckType.GetProperties().Where(prop => prop.GetCustomAttribute<AutoSpeckAttribute>() != null).Any(prop => prop.PropertyType == speckType)
-                            || speckType.GetFields().Where(field => field.GetCustomAttribute<AutoSpeckAttribute>() != null).Any(field => field.FieldType == speckType)
-                            || speckType.GetMethods().SelectMany(method => method.GetParameters().Where(param => param.GetCustomAttribute<AutoSpeckAttribute>() != null)).Any(param => param.ParameterType == speckType));
-
-            if (nestedSpecks.Any())
-            {
-                var stringBuilder = new StringBuilder();
-                stringBuilder.AppendLine("You cannot nest a Speck of the same type within itself.");
-                stringBuilder.AppendLine("The following nested Specks were found:");
-
-                foreach (var type in nestedSpecks) stringBuilder.AppendLine($"{type.Name}");
-
-                throw new Exception(stringBuilder.ToString());
-            }
-        }
-
         internal static List<Type> GetDependencyOrderedSpecks(this IEnumerable<Type> speckTypes)
         {
             var orderedDependencies = new List<Type>();
@@ -109,6 +96,25 @@ namespace SpeckyStandard.Extensions
         internal static List<ParameterInfo> GetAutoSpeckParameters(this Type speckType)
         {
             return speckType.GetMethods().SelectMany(method => method.GetParameters()).Where(param => param.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null).ToList();
+        }
+
+        private static void ThrowForNestedDependencies(IEnumerable<Type> speckTypes)
+        {
+            var nestedSpecks = speckTypes.Where(speckType
+                            => speckType.GetProperties().Where(prop => prop.GetCustomAttribute<AutoSpeckAttribute>() != null).Any(prop => prop.PropertyType == speckType)
+                            || speckType.GetFields().Where(field => field.GetCustomAttribute<AutoSpeckAttribute>() != null).Any(field => field.FieldType == speckType)
+                            || speckType.GetMethods().SelectMany(method => method.GetParameters().Where(param => param.GetCustomAttribute<AutoSpeckAttribute>() != null)).Any(param => param.ParameterType == speckType));
+
+            if (nestedSpecks.Any())
+            {
+                var stringBuilder = new StringBuilder();
+                stringBuilder.AppendLine("You cannot nest a Speck of the same type within itself.");
+                stringBuilder.AppendLine("The following nested Specks were found:");
+
+                foreach (var type in nestedSpecks) stringBuilder.AppendLine($"{type.Name}");
+
+                throw new Exception(stringBuilder.ToString());
+            }
         }
     }
 }

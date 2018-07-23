@@ -16,7 +16,10 @@ namespace SpeckyStandard.DI
 
         internal void Start()
         {
-            var speckTypes = CallindAssembly.TypesWithAttribute<SpeckAttribute>().ToList();
+            var speckTypes = CallindAssembly.TypesWithAttribute<SpeckAttribute>();
+            speckTypes = speckTypes.Concat(CallindAssembly.TypesWithAttribute<DalBaseAttribute>());
+
+            speckTypes = speckTypes.ToList();
             speckTypes = speckTypes.GetDependencyOrderedSpecks();
             InjectOrderedSpecks(speckTypes);
         }
