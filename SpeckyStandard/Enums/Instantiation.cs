@@ -1,6 +1,6 @@
 ﻿namespace SpeckyStandard.Enums
 {
-    public enum InjectionMode
+    public enum Instantiation
     {
         /// <summary>
         /// Directs the injected dependency to act as a single instance.
