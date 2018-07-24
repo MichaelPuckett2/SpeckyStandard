@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 using SpeckyStandard.Attributes;
-using SpeckyStandard.Debug;
+using SpeckyStandard.Logging;
 using SpeckyStandard.DI;
 using SpeckyStandard.Enums;
 using SpeckyStandard.Extensions;
