@@ -10,10 +10,12 @@ namespace SpeckyStandard
     /// </summary>
     public static class SpeckAutoStrapper
     {
-        static volatile bool IsStrappingStarted = false;
+        internal static bool IsStrappingStarted = false;
+        internal static bool IsStrappingComplete = false;
 
         /// <summary>
         /// Starts the strapping and injection process.
+        /// Note: It is important that this is performed first in your application and in the main application threading context.
         /// </summary>
         public static void Start()
         {
@@ -22,6 +24,7 @@ namespace SpeckyStandard
             var callingAssembly = Assembly.GetCallingAssembly();
             new InjectionWorker(callingAssembly).Start();
             new ControllerBuilder().Start();
+            IsStrappingComplete = true;
         }
     }
 }

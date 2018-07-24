@@ -43,10 +43,7 @@ namespace SpeckyStandard.Controllers
         {
             if (IsStarted) throw new Exception($"{nameof(RestDalController)}.{nameof(Start)} called while already started.");
 
-            if (SpeckContainer.Instance.GetInstance<WebClient>(false) == null)
-            {
-                SpeckContainer.Instance.InjectType(typeof(WebClient));
-            }
+            InsureWebClientInstance();
 
             IsStarted = true;
             canContinue = true;
@@ -65,6 +62,12 @@ namespace SpeckyStandard.Controllers
         {
             if (IsStarted) throw new Exception($"Cannot clear {nameof(RestSpeckDals)} while controller is started.");
             RestSpeckDals.Clear();
+        }
+
+        private static void InsureWebClientInstance()
+        {
+            if (SpeckContainer.Instance.GetInstance<WebClient>(false) == null)
+                SpeckContainer.Instance.InjectType(typeof(WebClient));
         }
 
         private void StartControllerLoop()

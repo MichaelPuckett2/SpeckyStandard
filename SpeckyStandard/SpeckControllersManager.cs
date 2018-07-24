@@ -1,4 +1,5 @@
 ﻿using SpeckyStandard.Controllers;
+using System;
 
 namespace SpeckyStandard
 {
@@ -6,6 +7,9 @@ namespace SpeckyStandard
     {
         public static void StartControllers()
         {
+            if (!SpeckAutoStrapper.IsStrappingStarted && !SpeckAutoStrapper.IsStrappingComplete)
+                throw new Exception($"{nameof(SpeckControllersManager)} cannot start until {nameof(SpeckAutoStrapper)} has completed strapping the application.");
+
             if (!RestDalController.Instance.IsStarted) RestDalController.Instance.Start();
         }
 
