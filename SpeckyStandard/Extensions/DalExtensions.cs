@@ -10,7 +10,7 @@ namespace SpeckyStandard.Extensions
     {
         internal static BindingFlags BindingFlag = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        internal static List<(PropertyInfo propertyInfo, T dal)> GetDalProperties<T>(this Type speckType) where T : DalBaseAttribute
+        internal static List<(PropertyInfo propertyInfo, T dal)> GetDalProperties<T>(this Type speckType) where T : ContextBaseAttribute
         {
             return speckType
                   .GetProperties(BindingFlag)

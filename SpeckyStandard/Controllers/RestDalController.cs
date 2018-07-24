@@ -2,24 +2,25 @@
 using SpeckyStandard.Attributes;
 using SpeckyStandard.Debug;
 using SpeckyStandard.DI;
+using SpeckyStandard.Enums;
 using SpeckyStandard.Extensions;
+using SpeckyStandard.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SpeckyStandard.Controllers
 {
-    internal class RestDalController : IDalController<RestDalContextAttribute>
+    internal class RestDalController : IDalController<RestPollingAttribute>
     {
         private volatile bool isStarted;
         private volatile bool canContinue;
         public event EventHandler Started;
         public event EventHandler Stopped;
 
-        private List<SpeckDal<RestDalContextAttribute>> RestSpeckDals { get; } = new List<SpeckDal<RestDalContextAttribute>>();
+        private List<SpeckDal<RestPollingAttribute>> RestSpeckDals { get; } = new List<SpeckDal<RestPollingAttribute>>();
 
         private RestDalController() { }
         public static RestDalController Instance { get; } = new RestDalController();
@@ -54,9 +55,9 @@ namespace SpeckyStandard.Controllers
 
         public void Stop() => canContinue = false;
 
-        public void Add(SpeckDal<RestDalContextAttribute> restSpeckDal)
+        public void Add(SpeckDal<RestPollingAttribute> restSpeckDal)
         {
-            if (IsStarted) throw new Exception($"Cannot add {nameof(SpeckDal<RestDalContextAttribute>)} while controller is started.");
+            if (IsStarted) throw new Exception($"Cannot add {nameof(SpeckDal<RestPollingAttribute>)} while controller is started.");
             RestSpeckDals.Add(restSpeckDal);
         }
 
@@ -87,24 +88,32 @@ namespace SpeckyStandard.Controllers
             }
         }
 
-        private void ProcessRestDalContext(SpeckDal<RestDalContextAttribute> restDalModel)
+        private void ProcessRestDalContext(SpeckDal<RestPollingAttribute> restDalModel)
         {
             if (restDalModel.DalAttribute.LastInterval.IsNowPast(restDalModel.DalAttribute.Interval))
             {
                 var restDals = from propertyInfo in restDalModel.InjectionModel.Instance.GetType().GetProperties()
-                               let restDal = propertyInfo.GetAttribute<RestDalAttribute>()
+                               let restDal = propertyInfo.GetAttribute<RestDataAttribute>()
                                where restDal != null
                                select new { PropInfo = propertyInfo, RestDal = restDal };
 
                 foreach (var restDal in restDals)
                 {
-                    var url = $"{restDalModel.DalAttribute.Url}{restDal.RestDal.Url}";
+                    var url = $"{restDalModel.DalAttribute.HeadUrl}{restDal.RestDal.Url}";
                     var dalResult = GetJsonResult(url, restDal.PropInfo.PropertyType);
 
                     try
                     {
                         var setMethod = restDal.PropInfo.GetSetMethod(true);
                         setMethod.Invoke(restDalModel.InjectionModel.Instance, new object[] { dalResult });
+
+                        if (restDalModel.InjectionModel.Instance is NotifyBase notifyBase
+                        && restDal.RestDal.CanNotify)
+                        {
+                            var propertyName = restDal.PropInfo.Name;
+                            Log.Print($"Notify: {propertyName}", PrintType.DebugWindow);
+                            notifyBase.Notify(propertyName);
+                        }
                     }
                     catch (Exception exception)
                     {
