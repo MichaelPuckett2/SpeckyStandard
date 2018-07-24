@@ -3,7 +3,7 @@ using SpeckyStandard.DI;
 
 namespace SpeckyStandard.Controllers
 {
-    internal class SpeckDal<TDalAttribute> where TDalAttribute : DalBaseAttribute
+    internal class SpeckDal<TDalAttribute> where TDalAttribute : ContextBaseAttribute
     {
         internal SpeckDal(InjectionModel injectionModel, TDalAttribute dalAttribute)
         {

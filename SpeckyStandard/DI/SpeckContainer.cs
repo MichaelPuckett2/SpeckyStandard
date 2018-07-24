@@ -18,7 +18,7 @@ namespace SpeckyStandard.DI
         internal void InjectSingleton(Type type, Type referencedType)
         {
             var injectionModel = new InjectionModel(
-                                     type: type, 
+                                     type: type,
                                      referencedType: referencedType);
 
             InjectionModels.Add(injectionModel);
@@ -60,7 +60,7 @@ namespace SpeckyStandard.DI
                     return newSpeck;
                 case Instantiation.Singleton:
                     return injectionModel.Instance;
-                default :
+                default:
                     if (throwable)
                     {
                         throw new Exception($"Type: {type.Name} not injected");
@@ -76,7 +76,8 @@ namespace SpeckyStandard.DI
         {
             foreach (var injectionModel in InjectionModels)
                 if (injectionModel.Instance is IDisposable disposable)
-                    disposable.Dispose();
+                    try { disposable?.Dispose(); }
+                    catch { }
         }
     }
 }

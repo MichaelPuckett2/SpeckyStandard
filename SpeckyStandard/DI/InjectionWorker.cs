@@ -17,7 +17,7 @@ namespace SpeckyStandard.DI
         internal void Start()
         {
             var speckTypes = CallindAssembly.TypesWithAttribute<SpeckAttribute>();
-            speckTypes = speckTypes.Concat(CallindAssembly.TypesWithAttribute<DalBaseAttribute>());
+            //speckTypes = speckTypes.Concat(CallindAssembly.TypesWithAttribute<DalBaseAttribute>());
 
             speckTypes = speckTypes.ToList();
             speckTypes = speckTypes.GetDependencyOrderedSpecks();
@@ -29,29 +29,26 @@ namespace SpeckyStandard.DI
             var formattersStillAwaitingConstruction = new List<object>();
             foreach (var speckType in speckTypes)
             {
-                var knownSpeck = SpeckContainer.Instance.GetInstance(speckType, false)?.GetType();
-
-                var speckAttribute = speckType.GetAttribute<SpeckAttribute>();
-                var injectionMode = speckAttribute?.InjectionMode ?? Instantiation.Singleton;
-
                 if (speckType.HasSpeckDependencies())
                 {
-                    InjectPartialSpeck(formattersStillAwaitingConstruction, speckType, injectionMode);
+                    InjectPartialSpeck(formattersStillAwaitingConstruction, speckType);
                 }
                 else
                 {
-                    InjectFullSpeck(speckType, injectionMode);
+                    InjectFullSpeck(speckType);
                 }
             }
         }
 
-        private void InjectFullSpeck(Type speckType, Instantiation injectionMode)
+        private void InjectFullSpeck(Type speckType)
         {
+            var speckAttribute = speckType.GetAttribute<SpeckAttribute>();
+            var injectionMode = speckAttribute?.InjectionMode ?? Instantiation.Singleton;
+
             switch (injectionMode)
             {
                 case Instantiation.Singleton:
                     if (speckType.IsInterface) break;
-                    var speckAttribute = speckType.GetAttribute<SpeckAttribute>();
                     SpeckContainer.Instance.InjectSingleton(speckType, speckAttribute?.ReferencedType);
                     break;
                 case Instantiation.PerRequest:
@@ -62,7 +59,7 @@ namespace SpeckyStandard.DI
             }
         }
 
-        private void InjectPartialSpeck(List<object> formattersStillAwaitingConstruction, Type speckType, Instantiation injectionMode)
+        private void InjectPartialSpeck(List<object> formattersStillAwaitingConstruction, Type speckType)
         {
             var formattedObject = FormatterServices.GetUninitializedObject(speckType);
 
@@ -83,14 +80,15 @@ namespace SpeckyStandard.DI
 
             formattersStillAwaitingConstruction.Add(formattedObject);
 
+            var speckAttribute = speckType.GetAttribute<SpeckAttribute>();
+            var injectionMode = speckAttribute?.InjectionMode ?? Instantiation.Singleton;
+
             if (injectionMode != Instantiation.Singleton)
             {
                 throw new Exception($"Specks containing auto specks can only use default {nameof(Instantiation)}.{nameof(Instantiation.Singleton)}\n{formattedObject.GetType().Name} is set as {nameof(Instantiation)}.{injectionMode.ToString()}");
             }
 
             formattedObject.GetType().GetConstructor(Type.EmptyTypes).Invoke(formattedObject, null);
-
-            var speckAttribute = speckType.GetAttribute<SpeckAttribute>();
             SpeckContainer.Instance.InjectSingleton(formattedObject, speckAttribute?.ReferencedType);
         }
     }

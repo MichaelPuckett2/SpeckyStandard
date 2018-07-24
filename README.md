@@ -101,8 +101,7 @@ See the various ways that injection is annotated on the types.
             InitializeComponent();
             DataContext = TestTypeViewModel;
         }
-    }
-    
+    }    
     
     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     
@@ -115,6 +114,53 @@ See the various ways that injection is annotated on the types.
             Current.MainWindow.Show();
         }
     }
+
+    ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    **Data Access Layers**
+
+    The RestPollingAttribute can be used to label a Speck as a data access layer for rest results.
+    The default implementation of the RestPolling uses WebClient and Newtonsoft on a seperate thread to keep the RestData updated.
+    Add the RestDataAttribute to the expected json result object type and let Specky do the work.
+    After Specky has completed initializing via SpeckAutoStrapper.Start you can at anytime start or stop the Data Access Layers like so:
+    SpeckControllersManager.StartControllers();
+
+    If the type is inherited by NotifyBase then the RestData will automatically notify when udpated unless specified otherwise.
+ 
+    Here's an example:
+    Note the various ways of implementing IpAddressContext. All implementations are the same.
+    ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    public class IpAddress
+    {
+        public string Ip { get; set; }
+    }
+
+    [RestPolling("http://ip.jsontest.com/", Interval = 1000)]
+    public class IpAddressContext : NotifyBase
+    {
+        [RestData(CanNotify = true)]
+        public IpAddress IpAddress { get; set; }
+    }
+
+    // or...
+
+    [RestPolling]
+    public class IpAddressContext : NotifyBase
+    {
+        [RestData("http://ip.jsontest.com/")]
+        public IpAddress IpAddress { get; set; }
+    }
+
+    // or...
+
+    [RestPolling("http://")]
+    public class IpAddressContext : NotifyBase
+    {
+        [RestData("ip.jsontest.com/")]
+        public IpAddress IpAddress { get; set; }
+    }
+    
     
     
     

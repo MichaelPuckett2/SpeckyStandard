@@ -3,7 +3,7 @@ using System;
 
 namespace SpeckyStandard.Controllers
 {
-    internal interface IDalController<TDalAttribute> where TDalAttribute : DalBaseAttribute
+    internal interface IDalController<TDalAttribute> where TDalAttribute : ContextBaseAttribute
     {
         bool IsStarted { get; }
         event EventHandler Started;

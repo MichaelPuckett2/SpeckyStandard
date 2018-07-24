@@ -14,14 +14,14 @@ namespace SpeckyStandard.Controllers
             BuildDalControllers(speckDals);
         }
 
-        private static void BuildDalControllers(IEnumerable<SpeckDal<DalBaseAttribute>> speckDals)
+        private static void BuildDalControllers(IEnumerable<SpeckDal<ContextBaseAttribute>> speckDals)
         {
             foreach (var speckDal in speckDals)
             {
                 switch (speckDal.DalAttribute)
                 {
-                    case RestDalContextAttribute restDal:
-                        RestDalController.Instance.Add(new SpeckDal<RestDalContextAttribute>(speckDal.InjectionModel, restDal));
+                    case RestPollingAttribute restDal:
+                        RestDalController.Instance.Add(new SpeckDal<RestPollingAttribute>(speckDal.InjectionModel, restDal));
                         break;
                     default:
                         break;
@@ -29,12 +29,12 @@ namespace SpeckyStandard.Controllers
             }
         }
 
-        private static IEnumerable<SpeckDal<DalBaseAttribute>> GetSpeckDals()
+        private static IEnumerable<SpeckDal<ContextBaseAttribute>> GetSpeckDals()
         {
             return from speck in SpeckContainer.Instance.InjectionModels
-                   let dal = speck.Type.GetAttribute<DalBaseAttribute>()
+                   let dal = speck.Type.GetAttribute<ContextBaseAttribute>()
                    where dal != null
-                   select new SpeckDal<DalBaseAttribute>(speck, dal);
+                   select new SpeckDal<ContextBaseAttribute>(speck, dal);
         }
     }
 }

@@ -64,7 +64,23 @@ namespace SpeckyStandard.Extensions
                                          .Where(param => param.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null)
                                          .Select(param => param.ParameterType);
 
+            ThrowIfNotGivenSpeckAttribute(dependantPropertyTypes);
+            ThrowIfNotGivenSpeckAttribute(dependantFieldTypes);
+            ThrowIfNotGivenSpeckAttribute(dependantParameterTypes);
+
             return dependantPropertyTypes.Concat(dependantFieldTypes).Concat(dependantParameterTypes).Distinct().ToList();
+        }
+
+        private static void ThrowIfNotGivenSpeckAttribute(IEnumerable<Type> dependantPropertyTypes)
+        {
+            foreach (var type in dependantPropertyTypes)
+                ThrowIfNotGivenSpeckAttribute(type);
+        }
+
+        private static void ThrowIfNotGivenSpeckAttribute(Type type)
+        {
+            if (!type.IsInterface && type.GetAttribute<SpeckAttribute>() == null)
+                throw new Exception($"{type.Name} is a dependant of another Speck but does not have it's own {nameof(SpeckAttribute)} provided.\nTypes given the {nameof(AutoSpeckAttribute)}, as a dependant of another Speck, must have the {nameof(SpeckAttribute)}");
         }
 
         internal static List<Type> GetDependencyOrderedSpecks(this IEnumerable<Type> speckTypes)
