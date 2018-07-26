@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace SpeckyStandard.Controllers
 {
@@ -24,6 +25,8 @@ namespace SpeckyStandard.Controllers
 
         private RestDalController() { }
         public static RestDalController Instance { get; } = new RestDalController();
+
+        public bool CanStart => RestSpeckDals.Any() && !IsStarted;
 
         public bool IsStarted
         {
@@ -41,7 +44,10 @@ namespace SpeckyStandard.Controllers
 
         public void Start()
         {
-            if (IsStarted) throw new Exception($"{nameof(RestDalController)}.{nameof(Start)} called while already started.");
+            if (!CanStart)
+                throw new Exception($"{nameof(RestDalController)}.{nameof(Start)} cannot start either because it has already started or there is no data available for work. Please check {nameof(CanStart)} before calling start.");
+
+            Log.Print($"Starting {nameof(RestDalController)}.", PrintType.DebugWindow);
 
             InsureWebClientInstance();
 
@@ -79,7 +85,7 @@ namespace SpeckyStandard.Controllers
                     ProcessRestDalContexts();
                     Task.Delay(10).Wait();
                 }
-            }, TaskCreationOptions.LongRunning);
+            }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
         private void ProcessRestDalContexts()

@@ -1,6 +1,8 @@
 ﻿using SpeckyStandard.Attributes;
 using SpeckyStandard.DI;
+using SpeckyStandard.Enums;
 using SpeckyStandard.Extensions;
+using SpeckyStandard.Logging;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -21,6 +23,8 @@ namespace SpeckyStandard.Controllers
                 switch (speckDal.DalAttribute)
                 {
                     case RestPollingAttribute restDal:
+                        Log.Print($"Adding {nameof(SpeckDal<RestPollingAttribute>)}.", PrintType.DebugWindow);
+
                         RestDalController.Instance.Add(new SpeckDal<RestPollingAttribute>(speckDal.InjectionModel, restDal));
                         break;
                     default:

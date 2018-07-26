@@ -9,8 +9,6 @@ namespace SpeckyStandard.Extensions
 {
     internal static class SpeckExtensions
     {
-        internal static BindingFlags BindingFlag = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
         public static T GetAttribute<T>(this Type type) where T : Attribute
         {
             return (T)type.GetCustomAttribute(typeof(T));
@@ -101,12 +99,12 @@ namespace SpeckyStandard.Extensions
 
         internal static List<PropertyInfo> GetAutoSpeckProperties(this Type speckType)
         {
-            return speckType.GetProperties(BindingFlag).Where(prop => prop.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null).ToList();
+            return speckType.GetProperties(Constants.BindingFlags).Where(prop => prop.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null).ToList();
         }
 
         internal static List<FieldInfo> GetAutoSpeckFields(this Type speckType)
         {
-            return speckType.GetFields(BindingFlag).Where(field => field.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null).ToList();
+            return speckType.GetFields(Constants.BindingFlags).Where(field => field.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null).ToList();
         }
 
         internal static List<ParameterInfo> GetAutoSpeckParameters(this Type speckType)

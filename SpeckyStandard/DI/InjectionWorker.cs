@@ -1,6 +1,7 @@
 ﻿using SpeckyStandard.Attributes;
 using SpeckyStandard.Enums;
 using SpeckyStandard.Extensions;
+using SpeckyStandard.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,11 +17,17 @@ namespace SpeckyStandard.DI
 
         internal void Start()
         {
-            var speckTypes = CallindAssembly.TypesWithAttribute<SpeckAttribute>();
-            //speckTypes = speckTypes.Concat(CallindAssembly.TypesWithAttribute<DalBaseAttribute>());
+            Log.Print("Locating Specks.", PrintType.DebugWindow);
 
+            var speckTypes = CallindAssembly.TypesWithAttribute<SpeckAttribute>();
             speckTypes = speckTypes.ToList();
+
+            Log.Print("Ordering Specks.", PrintType.DebugWindow);
+
             speckTypes = speckTypes.GetDependencyOrderedSpecks();
+
+            Log.Print("Injecting Specks.", PrintType.DebugWindow);
+
             InjectOrderedSpecks(speckTypes);
         }
 
@@ -63,20 +70,8 @@ namespace SpeckyStandard.DI
         {
             var formattedObject = FormatterServices.GetUninitializedObject(speckType);
 
-            var speckProperties = speckType.GetAutoSpeckProperties();
-
-            foreach (var speckProperty in speckProperties)
-            {
-                if (!speckProperty.CanWrite) throw new Exception($"Readonly properties cannot be instialized via {nameof(AutoSpeckAttribute)}.  Try giving the property a private setter.\nThrow on {nameof(speckProperty.Name)}");
-                speckProperty.SetValue(formattedObject, SpeckContainer.Instance.GetInstance(speckProperty.PropertyType));
-            }
-
-            var speckFields = speckType.GetAutoSpeckFields();
-
-            foreach (var speckField in speckFields)
-            {
-                speckField.SetValue(formattedObject, SpeckContainer.Instance.GetInstance(speckField.FieldType));
-            }
+            SetAutoSpeckProperties(speckType, formattedObject);
+            SetAutoSpeckFields(speckType, formattedObject);
 
             formattersStillAwaitingConstruction.Add(formattedObject);
 
@@ -90,6 +85,47 @@ namespace SpeckyStandard.DI
 
             formattedObject.GetType().GetConstructor(Type.EmptyTypes).Invoke(formattedObject, null);
             SpeckContainer.Instance.InjectSingleton(formattedObject, speckAttribute?.ReferencedType);
+        }
+
+        private static void SetAutoSpeckProperties(Type speckType, object formattedObject)
+        {
+            var speckProperties = speckType.GetAutoSpeckProperties();
+            foreach (var speckProperty in speckProperties)
+                SetPropertyValue(formattedObject, speckProperty);
+        }
+
+        private static void SetAutoSpeckFields(Type speckType, object formattedObject)
+        {
+            var speckFields = speckType.GetAutoSpeckFields();
+            foreach (var speckField in speckFields)
+                speckField.SetValue(formattedObject, SpeckContainer.Instance.GetInstance(speckField.FieldType), Constants.BindingFlags, null, null);
+        }
+
+        private static void SetPropertyValue(object formattedObject, PropertyInfo speckProperty)
+        {
+            if (speckProperty.CanWrite)
+            {
+                speckProperty.SetValue(formattedObject, SpeckContainer.Instance.GetInstance(speckProperty.PropertyType));
+            }
+            else
+            {
+                var backField = speckProperty.ReflectedType
+                               .GetFields(Constants.BindingFlags)
+                               .Where(fieldInfo =>
+                               {
+                                   return fieldInfo.Name.StartsWith($"<{speckProperty.Name}>")
+                                       && fieldInfo.Name.EndsWith("BackingField");
+                               }).FirstOrDefault();
+
+                if (backField != null)
+                {
+                    backField.SetValue(formattedObject, SpeckContainer.Instance.GetInstance(speckProperty.PropertyType));
+                }
+                else
+                {
+                    Log.Print($"Cannot set AutoSpeck readonly property {nameof(speckProperty.Name)}.", DebugSettings.DebugPrintType);
+                }
+            }
         }
     }
 }

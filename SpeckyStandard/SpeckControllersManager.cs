@@ -10,7 +10,7 @@ namespace SpeckyStandard
             if (!SpeckAutoStrapper.IsStrappingStarted && !SpeckAutoStrapper.IsStrappingComplete)
                 throw new Exception($"{nameof(SpeckControllersManager)} cannot start until {nameof(SpeckAutoStrapper)} has completed strapping the application.");
 
-            if (!RestDalController.Instance.IsStarted) RestDalController.Instance.Start();
+            if (RestDalController.Instance.CanStart) RestDalController.Instance.Start();
         }
 
         public static void StopControllers()

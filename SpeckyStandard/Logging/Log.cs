@@ -9,7 +9,7 @@ namespace SpeckyStandard.Logging
         {
             if (printType == PrintType.DebugWindow)
             {
-                System.Diagnostics.Debug.Print(message);
+                System.Diagnostics.Debug.Print($"** SPECKY :: {message}");
             }
 
             if (printType == PrintType.LogFile)
