@@ -10,16 +10,16 @@ namespace SpeckyStandard.DI
         {
             Type = type;
             ReferencedType = type;
-            InjectionMode = Instantiation.Singleton;
+            InjectionMode = SpeckType.Singleton;
             Instance = instantiatedObject;
         }
 
-        internal InjectionModel(Type type, Instantiation injectionMode, params object[] parameters)
+        internal InjectionModel(Type type, SpeckType injectionMode, params object[] parameters)
         {
             Type = type;
             ReferencedType = type;
             InjectionMode = injectionMode;
-            Instance = InjectionMode == Instantiation.Singleton
+            Instance = InjectionMode == SpeckType.Singleton
                      ? Activator.CreateInstance(Type, parameters)
                      : null;
         }
@@ -28,8 +28,8 @@ namespace SpeckyStandard.DI
         {
             Type = type;
             ReferencedType = referencedType;
-            InjectionMode = Instantiation.Singleton;
-            Instance = InjectionMode == Instantiation.Singleton
+            InjectionMode = SpeckType.Singleton;
+            Instance = InjectionMode == SpeckType.Singleton
                      ? Activator.CreateInstance(Type, parameters)
                      : null;
         }
@@ -37,7 +37,7 @@ namespace SpeckyStandard.DI
         internal Type Type { get; }
         internal object Instance { get; }
         internal Type ReferencedType { get; }
-        internal Instantiation InjectionMode { get; }
+        internal SpeckType InjectionMode { get; }
         internal T GetAttribute<T>() where T : Attribute => Type.GetAttribute<T>() ?? ReferencedType.GetAttribute<T>();
     }
 }

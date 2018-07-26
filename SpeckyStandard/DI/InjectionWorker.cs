@@ -43,19 +43,19 @@ namespace SpeckyStandard.DI
         private void InjectFullSpeck(Type speckType)
         {
             var speckAttribute = speckType.GetAttribute<SpeckAttribute>();
-            var injectionMode = speckAttribute?.InjectionMode ?? Instantiation.Singleton;
+            var injectionMode = speckAttribute?.SpeckType ?? SpeckType.Singleton;
 
             switch (injectionMode)
             {
-                case Instantiation.Singleton:
+                case SpeckType.Singleton:
                     if (speckType.IsInterface) break;
                     SpeckContainer.Instance.InjectSingleton(speckType, speckAttribute?.ReferencedType);
                     break;
-                case Instantiation.PerRequest:
+                case SpeckType.PerRequest:
                     SpeckContainer.Instance.InjectType(speckType);
                     break;
                 default:
-                    throw new Exception($"Unknown {nameof(Instantiation)}");
+                    throw new Exception($"Unknown {nameof(SpeckType)}");
             }
         }
 
@@ -81,11 +81,11 @@ namespace SpeckyStandard.DI
             formattersStillAwaitingConstruction.Add(formattedObject);
 
             var speckAttribute = speckType.GetAttribute<SpeckAttribute>();
-            var injectionMode = speckAttribute?.InjectionMode ?? Instantiation.Singleton;
+            var injectionMode = speckAttribute?.SpeckType ?? SpeckType.Singleton;
 
-            if (injectionMode != Instantiation.Singleton)
+            if (injectionMode != SpeckType.Singleton)
             {
-                throw new Exception($"Specks containing auto specks can only use default {nameof(Instantiation)}.{nameof(Instantiation.Singleton)}\n{formattedObject.GetType().Name} is set as {nameof(Instantiation)}.{injectionMode.ToString()}");
+                throw new Exception($"Specks containing auto specks can only use default {nameof(SpeckType)}.{nameof(SpeckType.Singleton)}\n{formattedObject.GetType().Name} is set as {nameof(SpeckType)}.{injectionMode.ToString()}");
             }
 
             formattedObject.GetType().GetConstructor(Type.EmptyTypes).Invoke(formattedObject, null);

@@ -9,18 +9,27 @@ namespace SpeckyStandard.Attributes
     [AttributeUsage(AttributeTargets.Class)]
     public class SpeckAttribute : Attribute
     {
-        public Instantiation InjectionMode { get; }
+        public SpeckType SpeckType { get; }
         public Type ReferencedType { get; }
 
-        public SpeckAttribute(Instantiation injectionMode = Instantiation.Singleton)
+        /// <summary>
+        /// Speck with optional SpeckType
+        /// </summary>
+        /// <param name="speckType">The SpeckType used for the Speck</param>
+        public SpeckAttribute(SpeckType speckType = SpeckType.Singleton)
         {
-            InjectionMode = injectionMode;
+            SpeckType = speckType;
             ReferencedType = null;
         }
 
+        /// <summary>
+        /// Speck with alternate reference type.
+        /// Alternate references forece the Speck to always be SpeckType.Singleton
+        /// </summary>
+        /// <param name="referencedType">The alternate type to reference the Speck</param>
         public SpeckAttribute(Type referencedType)
         {
-            InjectionMode = Instantiation.Singleton;
+            SpeckType = SpeckType.Singleton;
             ReferencedType = referencedType;
         }
     }

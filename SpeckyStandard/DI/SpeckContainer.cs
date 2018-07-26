@@ -37,7 +37,7 @@ namespace SpeckyStandard.DI
         {
             var injectionModel = new InjectionModel(
                                      type: type,
-                                     injectionMode: Instantiation.PerRequest);
+                                     injectionMode: SpeckType.PerRequest);
 
             InjectionModels.Add(injectionModel);
         }
@@ -55,10 +55,10 @@ namespace SpeckyStandard.DI
 
             switch (injectionModel?.InjectionMode)
             {
-                case Instantiation.PerRequest:
+                case SpeckType.PerRequest:
                     var newSpeck = Activator.CreateInstance(injectionModel.Type);
                     return newSpeck;
-                case Instantiation.Singleton:
+                case SpeckType.Singleton:
                     return injectionModel.Instance;
                 default:
                     if (throwable)
