@@ -97,14 +97,24 @@ namespace SpeckyStandard.Extensions
             return orderedDependencies;
         }
 
-        internal static List<PropertyInfo> GetAutoSpeckProperties(this Type speckType)
+        internal static List<(PropertyInfo PropertyInfo, AutoSpeckAttribute AutoSpeckAttribute)> GetAutoSpeckPropertyAttributeTuples(this Type speckType)
         {
-            return speckType.GetProperties(Constants.BindingFlags).Where(prop => prop.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null).ToList();
+            var tuplePropertyAutoSpecks = from propertyInfo in speckType.GetProperties(Constants.BindingFlags)
+                                          let autoSpeckAttribute = propertyInfo.GetCustomAttribute<AutoSpeckAttribute>()
+                                          where autoSpeckAttribute != null
+                                          select (propertyInfo, autoSpeckAttribute);
+
+            return tuplePropertyAutoSpecks.ToList();
         }
 
-        internal static List<FieldInfo> GetAutoSpeckFields(this Type speckType)
+        internal static List<(FieldInfo FieldInfo, AutoSpeckAttribute AutoSpeckAttribute)> GetAutoSpeckFieldAttributeTuples(this Type speckType)
         {
-            return speckType.GetFields(Constants.BindingFlags).Where(field => field.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null).ToList();
+            var tuples = from fieldInfo in speckType.GetFields(Constants.BindingFlags)
+                         let autoSpeckAttribute = fieldInfo.GetCustomAttribute<AutoSpeckAttribute>()
+                         where autoSpeckAttribute != null
+                         select (fieldInfo, autoSpeckAttribute);
+
+            return tuples.ToList();
         }
 
         internal static List<ParameterInfo> GetAutoSpeckParameters(this Type speckType)

@@ -89,19 +89,19 @@ See the various ways that injection is annotated on the types.
     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     
     // Inject the dependency as MainWindow and is registered as single instance.
-    [Speck] 
+    [Speck]
     public partial class MainWindow : Window
     {
-        // Intializes ThirdTestType via TestTypeViewModel dependency.
-        [AutoSpeck] 
-        public TestTypeViewModel TestTypeViewModel { get; private set; }
+        // Inject the ViewModel automatically into a base type.
+        [AutoSpeck(typeof(TestTypeViewModel))]
+        public INotifyPropertyChanged ViewModel { get; }
 
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = TestTypeViewModel;
+            DataContext = ViewModel;
         }
-    }    
+    }   
     
     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     

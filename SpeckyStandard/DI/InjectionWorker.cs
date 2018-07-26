@@ -89,23 +89,22 @@ namespace SpeckyStandard.DI
 
         private static void SetAutoSpeckProperties(Type speckType, object formattedObject)
         {
-            var speckProperties = speckType.GetAutoSpeckProperties();
-            foreach (var speckProperty in speckProperties)
-                SetPropertyValue(formattedObject, speckProperty);
+            var tuples = speckType.GetAutoSpeckPropertyAttributeTuples();
+
+            foreach (var tuple in tuples)
+            {
+                var instanceType = tuple.AutoSpeckAttribute.OfType 
+                                ?? tuple.PropertyInfo.PropertyType;
+
+                SetPropertyValue(formattedObject, tuple.PropertyInfo, instanceType);
+            }
         }
 
-        private static void SetAutoSpeckFields(Type speckType, object formattedObject)
-        {
-            var speckFields = speckType.GetAutoSpeckFields();
-            foreach (var speckField in speckFields)
-                speckField.SetValue(formattedObject, SpeckContainer.Instance.GetInstance(speckField.FieldType), Constants.BindingFlags, null, null);
-        }
-
-        private static void SetPropertyValue(object formattedObject, PropertyInfo speckProperty)
+        private static void SetPropertyValue(object formattedObject, PropertyInfo speckProperty, Type instanceType)
         {
             if (speckProperty.CanWrite)
             {
-                speckProperty.SetValue(formattedObject, SpeckContainer.Instance.GetInstance(speckProperty.PropertyType));
+                speckProperty.SetValue(formattedObject, SpeckContainer.Instance.GetInstance(instanceType));
             }
             else
             {
@@ -119,12 +118,25 @@ namespace SpeckyStandard.DI
 
                 if (backField != null)
                 {
-                    backField.SetValue(formattedObject, SpeckContainer.Instance.GetInstance(speckProperty.PropertyType));
+                    backField.SetValue(formattedObject, SpeckContainer.Instance.GetInstance(instanceType));
                 }
                 else
                 {
                     Log.Print($"Cannot set AutoSpeck readonly property {nameof(speckProperty.Name)}.", DebugSettings.DebugPrintType);
                 }
+            }
+        }
+
+        private static void SetAutoSpeckFields(Type speckType, object formattedObject)
+        {
+            var tuples = speckType.GetAutoSpeckFieldAttributeTuples();
+
+            foreach (var tuple in tuples)
+            {
+                var instanceType = tuple.AutoSpeckAttribute.OfType
+                                ?? tuple.FieldInfo.FieldType;
+
+                tuple.FieldInfo.SetValue(formattedObject, SpeckContainer.Instance.GetInstance(instanceType), Constants.BindingFlags, null, null);
             }
         }
     }
