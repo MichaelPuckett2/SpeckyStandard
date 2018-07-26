@@ -4,7 +4,7 @@ namespace SpeckyStandard.Attributes
 {
     /// <summary>
     /// A Speck used to declare a type to be used as a data access layer via rest.
-    /// WebClient and NewtonSoft is used to call the url provided and update the values given the RestDalAttribute. 
+    /// HttpClient and NewtonSoft is used to call the url provided and update the values given the RestDalAttribute. 
     /// </summary>
     public sealed class RestPollingAttribute : ContextBaseAttribute
     {
@@ -17,7 +17,7 @@ namespace SpeckyStandard.Attributes
         }
 
         /// <summary>
-        /// The url used by WebClient to download the string.
+        /// The url used by HttpClient to download the string.
         /// </summary>
         public string HeadUrl { get; }
 

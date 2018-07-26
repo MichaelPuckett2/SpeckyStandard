@@ -1,16 +1,16 @@
 ﻿using Newtonsoft.Json;
 using SpeckyStandard.Attributes;
-using SpeckyStandard.Logging;
 using SpeckyStandard.DI;
 using SpeckyStandard.Enums;
 using SpeckyStandard.Extensions;
+using SpeckyStandard.Logging;
 using SpeckyStandard.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
+using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace SpeckyStandard.Controllers
 {
@@ -49,7 +49,7 @@ namespace SpeckyStandard.Controllers
 
             Log.Print($"Starting {nameof(RestDalController)}.", PrintType.DebugWindow);
 
-            InsureWebClientInstance();
+            InsureHttpClientInstance();
 
             IsStarted = true;
             canContinue = true;
@@ -70,10 +70,10 @@ namespace SpeckyStandard.Controllers
             RestSpeckDals.Clear();
         }
 
-        private static void InsureWebClientInstance()
+        private static void InsureHttpClientInstance()
         {
-            if (SpeckContainer.Instance.GetInstance<WebClient>(false) == null)
-                SpeckContainer.Instance.InjectType(typeof(WebClient));
+            if (SpeckContainer.Instance.GetInstance<HttpClient>(false) == null)
+                SpeckContainer.Instance.InjectType(typeof(HttpClient));
         }
 
         private void StartControllerLoop()
@@ -138,9 +138,9 @@ namespace SpeckyStandard.Controllers
         {
             try
             {
-                Log.Print($"{nameof(WebClient)} at {url}", PrintType.DebugWindow);
-                var webClient = SpeckContainer.Instance.GetInstance<WebClient>();
-                var json = webClient.DownloadString(url);
+                Log.Print($"{nameof(HttpClient)} at {url}", PrintType.DebugWindow);
+                var httpClient = SpeckContainer.Instance.GetInstance<HttpClient>();
+                var json = httpClient.GetStringAsync(url).Result;
                 Log.Print($"Result:\n{json}", PrintType.DebugWindow);
                 return JsonConvert.DeserializeObject(json, type);
             }
