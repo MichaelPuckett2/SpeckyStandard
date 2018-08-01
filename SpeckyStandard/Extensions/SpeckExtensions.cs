@@ -19,54 +19,78 @@ namespace SpeckyStandard.Extensions
             return (T)propertyInfo.GetCustomAttribute(typeof(T));
         }
 
+        public static T GetAttribute<T>(this FieldInfo fieldInfo) where T : Attribute
+        {
+            return (T)fieldInfo.GetCustomAttribute(typeof(T));
+        }
+
+        public static T GetAttribute<T>(this ParameterInfo parameterInfo) where T : Attribute
+        {
+            return (T)parameterInfo.GetCustomAttribute(typeof(T));
+        }
+
         internal static bool HasSpeckDependencies(this Type speckType)
         {
             var dependantPropertyTypes = speckType
                                         .GetProperties()
-                                        .Where(prop => prop.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null)
-                                        .Select(prop => prop.PropertyType);
+                                        .Where(propertyInfo => propertyInfo.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null)
+                                        .Select(propertyInfo => propertyInfo.PropertyType);
 
             var dependantFieldTypes = speckType
                                      .GetFields()
-                                     .Where(field => field.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null)
-                                     .Select(field => field.FieldType);
+                                     .Where(fieldInfo => fieldInfo.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null)
+                                     .Select(fieldInfo => fieldInfo.FieldType);
 
-            var dependantParameterTypes = speckType
-                                         .GetMethods()
-                                         .SelectMany(method => method.GetParameters())
-                                         .Where(param => param.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null)
-                                         .Select(param => param.ParameterType);
+            var dependantContructorParameterTypes = speckType
+                                                   .GetConstructors(Constants.BindingFlags)
+                                                   .FirstOrDefault()?
+                                                   .GetParameters()
+                                                   .Select(parameterInfo =>
+                                                   {
+                                                       var autoSpeckAttribute = parameterInfo.GetAttribute<AutoSpeckAttribute>();
+                                                       return autoSpeckAttribute?.OfType ?? parameterInfo.ParameterType;
+                                                   })
+                                                   ?? Enumerable.Empty<Type>();
 
-            var hasDependendantTypes = dependantPropertyTypes.Concat(dependantFieldTypes).Concat(dependantParameterTypes).Distinct().Any();
+            var hasDependendantTypes = dependantPropertyTypes
+                                      .Concat(dependantFieldTypes)
+                                      .Concat(dependantContructorParameterTypes)
+                                      .Distinct()
+                                      .Any();
 
             return hasDependendantTypes;
         }
 
         internal static List<Type> DependantSpecks(this IEnumerable<Type> speckTypes)
         {
-            ThrowForNestedDependencies(speckTypes);
+            ThrowForSelfNestedDependencies(speckTypes);
 
             var dependantPropertyTypes = speckTypes
                                         .SelectMany(type => type.GetProperties())
-                                        .Where(prop => prop.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null)
-                                        .Select(prop => prop.PropertyType);
+                                        .Where(propertyInfo => propertyInfo.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null)
+                                        .Select(propertyInfo => propertyInfo.PropertyType);
 
             var dependantFieldTypes = speckTypes
                                      .SelectMany(type => type.GetFields())
-                                     .Where(field => field.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null)
-                                     .Select(field => field.FieldType);
+                                     .Where(fieldInfo => fieldInfo.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null)
+                                     .Select(fieldInfo => fieldInfo.FieldType);
 
-            var dependantParameterTypes = speckTypes
-                                         .SelectMany(type => type.GetMethods())
-                                         .SelectMany(method => method.GetParameters())
-                                         .Where(param => param.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null)
-                                         .Select(param => param.ParameterType);
+            var dependantContructorParameterTypes = from speckType in speckTypes
+                                                    let constructor = speckType.GetConstructors(Constants.BindingFlags).FirstOrDefault()
+                                                    where constructor != null
+                                                    from parameterInfo in constructor.GetParameters()
+                                                    let autoSpeckAttribute = parameterInfo.GetAttribute<AutoSpeckAttribute>()
+                                                    select autoSpeckAttribute?.OfType ?? parameterInfo.ParameterType;
 
             ThrowIfNotGivenSpeckAttribute(dependantPropertyTypes);
             ThrowIfNotGivenSpeckAttribute(dependantFieldTypes);
-            ThrowIfNotGivenSpeckAttribute(dependantParameterTypes);
+            ThrowIfNotGivenSpeckAttribute(dependantContructorParameterTypes);
 
-            return dependantPropertyTypes.Concat(dependantFieldTypes).Concat(dependantParameterTypes).Distinct().ToList();
+            return dependantPropertyTypes
+                  .Concat(dependantFieldTypes)
+                  .Concat(dependantContructorParameterTypes)
+                  .Distinct()
+                  .ToList();
         }
 
         private static void ThrowIfNotGivenSpeckAttribute(IEnumerable<Type> dependantPropertyTypes)
@@ -122,7 +146,7 @@ namespace SpeckyStandard.Extensions
             return speckType.GetMethods().SelectMany(method => method.GetParameters()).Where(param => param.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null).ToList();
         }
 
-        private static void ThrowForNestedDependencies(IEnumerable<Type> speckTypes)
+        private static void ThrowForSelfNestedDependencies(IEnumerable<Type> speckTypes)
         {
             var nestedSpecks = speckTypes.Where(speckType
                             => speckType.GetProperties().Where(prop => prop.GetCustomAttribute<AutoSpeckAttribute>() != null).Any(prop => prop.PropertyType == speckType)

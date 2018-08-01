@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Text;
 
 namespace SpeckyStandard.DI
 {
@@ -83,7 +84,42 @@ namespace SpeckyStandard.DI
                 throw new Exception($"Specks containing auto specks can only use default {nameof(SpeckType)}.{nameof(SpeckType.Singleton)}\n{formattedObject.GetType().Name} is set as {nameof(SpeckType)}.{injectionMode.ToString()}");
             }
 
-            formattedObject.GetType().GetConstructor(Type.EmptyTypes).Invoke(formattedObject, null);
+            var formattedObjectContructor = formattedObject
+                                           .GetType()
+                                           .GetConstructors(Constants.BindingFlags)
+                                           .FirstOrDefault();
+
+            var parameterTypes = formattedObjectContructor?
+                                .GetParameters()
+                                .Select(parameterInfo =>
+                                {
+                                    var autoSpeckAttribute = parameterInfo.GetAttribute<AutoSpeckAttribute>();
+                                    return autoSpeckAttribute?.OfType ?? parameterInfo.ParameterType;
+                                })
+                                .ToArray();
+
+            if (!parameterTypes?.Any() ?? false)
+            {
+                formattedObject.GetType().GetConstructor(Type.EmptyTypes).Invoke(formattedObject, null);
+            }
+            else
+            {
+                try
+                {
+                    formattedObject.GetType().GetConstructor(parameterTypes).Invoke(formattedObject, SpeckContainer.Instance.GetInstances(parameterTypes));
+                }
+                catch (TargetParameterCountException)
+                {
+                    Log.Print($"{speckType.Name} has a constructor looking for types"
+                            + $" {parameterTypes.Select(parameterInfo => parameterInfo.Name).DelimitedText(", ")}"
+                            + " however if appears they aren't Specked.\n"
+                            + $"Try adding {nameof(AutoSpeckAttribute)} to the parameter and specifying a typeof if the parameter is the base of another Speck.\n"
+                            + "Example: If your parameter expected a specific type but you have a derived type Specked: \n"
+                            + "[AutoSpeck(typeof(TestViewModel))] INotifyProperyChanged viewModel", 
+                            PrintType.DebugWindow | PrintType.ThrowException);
+                }
+            }
+
             SpeckContainer.Instance.InjectSingleton(formattedObject, speckAttribute?.ReferencedType);
         }
 
@@ -93,7 +129,7 @@ namespace SpeckyStandard.DI
 
             foreach (var tuple in tuples)
             {
-                var instanceType = tuple.AutoSpeckAttribute.OfType 
+                var instanceType = tuple.AutoSpeckAttribute.OfType
                                 ?? tuple.PropertyInfo.PropertyType;
 
                 SetPropertyValue(formattedObject, tuple.PropertyInfo, instanceType);

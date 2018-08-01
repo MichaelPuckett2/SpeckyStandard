@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace SpeckyStandard.DI
 {
@@ -58,8 +59,10 @@ namespace SpeckyStandard.DI
                 case SpeckType.PerRequest:
                     var newSpeck = Activator.CreateInstance(injectionModel.Type);
                     return newSpeck;
+
                 case SpeckType.Singleton:
                     return injectionModel.Instance;
+
                 default:
                     if (throwable)
                     {
@@ -78,6 +81,16 @@ namespace SpeckyStandard.DI
                 if (injectionModel.Instance is IDisposable disposable)
                     try { disposable?.Dispose(); }
                     catch { }
+        }
+
+        internal object[] GetInstances(IEnumerable<Type> parameterTypes)
+        {
+            var objects = from injectionModel in InjectionModels
+                          from parameterType in parameterTypes
+                          where injectionModel.Type == parameterType || injectionModel.ReferencedType == parameterType
+                          select injectionModel.Instance;
+
+            return objects.ToArray();                          
         }
     }
 }

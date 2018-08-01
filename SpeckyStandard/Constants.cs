@@ -4,6 +4,8 @@ namespace SpeckyStandard
 {
     internal static class Constants
     {
-        internal static BindingFlags BindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        internal static BindingFlags BindingFlags = BindingFlags.Instance 
+                                                  | BindingFlags.Public 
+                                                  | BindingFlags.NonPublic;
     }
 }

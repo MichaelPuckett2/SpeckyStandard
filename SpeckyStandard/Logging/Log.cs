@@ -7,22 +7,21 @@ namespace SpeckyStandard.Logging
     {
         public static void Print(string message, PrintType printType, Exception innerException = null)
         {
-            if (printType == PrintType.DebugWindow)
+            if (printType.HasFlag(PrintType.DebugWindow))
             {
                 System.Diagnostics.Debug.Print($"** SPECKY :: {message}");
             }
 
-            if (printType == PrintType.LogFile)
+            if (printType.HasFlag(PrintType.LogFile))
             {
                 throw new NotImplementedException($"{nameof(Log)}.{nameof(Print)} does not yet support {nameof(PrintType.LogFile)}");
             }
 
-            if (printType == PrintType.ThrowException)
+            if (printType.HasFlag(PrintType.ThrowException))
             {
-                if (innerException != null)
-                    throw innerException == null 
-                        ? throw new Exception(message) 
-                        : new Exception(message, innerException);
+                throw innerException == null
+                    ? throw new Exception(message)
+                    : new Exception(message, innerException);
             }
         }
     }

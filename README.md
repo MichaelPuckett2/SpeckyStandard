@@ -102,6 +102,18 @@ See the various ways that injection is annotated on the types.
             DataContext = ViewModel;
         }
     }   
+
+    // or..
+
+    [Speck]
+    public partial class MainWindow : Window
+    {
+        public MainWindow([AutoSpeck(typeof(TestTypeViewModel))] INotifyPropertyChanged viewModel)
+        {
+            InitializeComponent();
+            DataContext = viewModel;
+        }
+    }
     
     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     
