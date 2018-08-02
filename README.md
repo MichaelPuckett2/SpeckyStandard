@@ -29,7 +29,7 @@ See the various ways that injection is annotated on the types.
     [Speck] 
     public class SecondTestType : ITestType
     {
-        // Intializes FirstTestType via FirstTestType dependency.
+        // Initializes FirstTestType via FirstTestType dependency.
         [AutoSpeck] 
         public FirstTestType FirstTestType { get; set; }
 
