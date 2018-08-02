@@ -2,7 +2,6 @@
 .NET Standard project to assist with DI, MVVM, XAML, and more...
 
 -- WPF EXAMPLE: --
-Below is a first commit example of using dependency injection:
 In this example we make 3 different types, 1 interface and 2 models of the interface.
 See the various ways that injection is annotated on the types.
 
@@ -22,7 +21,7 @@ See the various ways that injection is annotated on the types.
     public class FirstTestType : ITestType
     {
         static int IdCounter;
-        public int Id { get; set; } = ++IdCounter;
+        public int Id { get; private set; } = ++IdCounter;
         public string Name { get; set; } = "Mathew " + IdCounter;
     }
     
@@ -61,7 +60,7 @@ See the various ways that injection is annotated on the types.
             }
         }
 
-        // Intializes SecondTestType via SecondTestType dependency.
+        // Initializes SecondTestType via SecondTestType dependency.
         [AutoSpeck] 
         public SecondTestType SecondTestType
         {
@@ -73,7 +72,7 @@ See the various ways that injection is annotated on the types.
             }
         }
 
-        // Intializes ThirdTestType via ITestType dependency.
+        // Initializes ThirdTestType via ITestType dependency.
         [AutoSpeck] 
         public ITestType ThirdTestType
         {
@@ -132,7 +131,7 @@ See the various ways that injection is annotated on the types.
     **Data Access Layers**
 
     The RestPollingAttribute can be used to label a Speck as a data access layer for rest results.
-    The default implementation of the RestPolling uses WebClient and Newtonsoft on a seperate thread to keep the RestData updated.
+    The default implementation of the RestPolling uses HttpClient and Newtonsoft on a seperate thread to keep the RestData updated.
     Add the RestDataAttribute to the expected json result object type and let Specky do the work.
     After Specky has completed initializing via SpeckAutoStrapper.Start you can at anytime start or stop the Data Access Layers like so:
     SpeckControllersManager.StartControllers();
@@ -172,7 +171,3 @@ See the various ways that injection is annotated on the types.
         [RestData("ip.jsontest.com/")]
         public IpAddress IpAddress { get; set; }
     }
-    
-    
-    
-    

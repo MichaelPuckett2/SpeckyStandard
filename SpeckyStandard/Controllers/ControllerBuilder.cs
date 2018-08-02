@@ -8,12 +8,15 @@ using System.Linq;
 
 namespace SpeckyStandard.Controllers
 {
-    internal sealed class ControllerBuilder
+    internal static class ControllerBuilder
     {
-        internal void Start()
+        public static bool IsControllersBuilt { get; private set; }
+
+        internal static void Start()
         {
             var speckDals = GetSpeckDals();
             BuildDalControllers(speckDals);
+            IsControllersBuilt = true;
         }
 
         private static void BuildDalControllers(IEnumerable<SpeckDal<ContextBaseAttribute>> speckDals)

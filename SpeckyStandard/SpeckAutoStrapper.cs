@@ -1,5 +1,4 @@
-﻿using SpeckyStandard.Controllers;
-using SpeckyStandard.DI;
+﻿using SpeckyStandard.DI;
 using SpeckyStandard.Enums;
 using SpeckyStandard.Logging;
 using System.Reflection;
@@ -21,18 +20,17 @@ namespace SpeckyStandard
         /// </summary>
         public static void Start()
         {
-            if (IsStrappingStarted) return;
+            if (IsStrappingStarted)
+            {
+                Log.Print($"{nameof(SpeckAutoStrapper)}.{nameof(Start)} called but strapping is already started. Returning from call...", PrintType.DebugWindow);
+                return;
+            }
 
             Log.Print("Strapping...", PrintType.DebugWindow);
 
             IsStrappingStarted = true;
             var callingAssembly = Assembly.GetCallingAssembly();
             new InjectionWorker(callingAssembly).Start();
-
-            Log.Print("Building Controllers....", PrintType.DebugWindow);
-
-            new ControllerBuilder().Start();
-            IsStrappingComplete = true;
 
             Log.Print("Strapped.", PrintType.DebugWindow);
         }
