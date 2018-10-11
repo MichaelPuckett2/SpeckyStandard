@@ -13,15 +13,32 @@ namespace SpeckyStandard.DI
 {
     internal sealed class InjectionWorker
     {
-        private readonly Assembly CallindAssembly;
-        internal InjectionWorker(Assembly callingAssembly) => CallindAssembly = callingAssembly;
+        private readonly Assembly CallingAssembly;
+        internal InjectionWorker(Assembly callingAssembly) => CallingAssembly = callingAssembly;
 
         internal void Start()
         {
             Log.Print("Locating Specks.", PrintType.DebugWindow);
 
-            var speckTypes = CallindAssembly.TypesWithAttribute<SpeckAttribute>();
-            speckTypes = speckTypes.ToList();
+            StartConfigs();
+            StartSpecks();
+        }
+
+        private void StartConfigs()
+        {
+            var configTypes = CallingAssembly
+                             .TypesWithAttribute<SpeckConfigurationAttribute>(attribute => attribute.Profile == GlobalConfiguration.Profile)
+                             .ToList();
+
+            foreach (var configType in configTypes)
+                SpeckContainer.Instance.InjectSingleton(configType);
+        }
+
+        private void StartSpecks()
+        {
+            var speckTypes = CallingAssembly
+                            .TypesWithAttribute<SpeckAttribute>()
+                            .ToList();
 
             Log.Print("Ordering Specks.", PrintType.DebugWindow);
 
@@ -34,12 +51,11 @@ namespace SpeckyStandard.DI
 
         private void InjectOrderedSpecks(IEnumerable<Type> speckTypes)
         {
-            var formattersStillAwaitingConstruction = new List<object>();
             foreach (var speckType in speckTypes)
             {
                 if (speckType.HasSpeckDependencies())
                 {
-                    InjectPartialSpeck(formattersStillAwaitingConstruction, speckType);
+                    InjectPartialSpeck(speckType);
                 }
                 else
                 {
@@ -57,7 +73,15 @@ namespace SpeckyStandard.DI
             {
                 case SpeckType.Singleton:
                     if (speckType.IsInterface) break;
-                    SpeckContainer.Instance.InjectSingleton(speckType, speckAttribute?.ReferencedType);
+
+                    var parameterTypes = speckType
+                                        .GetConstructors(Constants.BindingFlags)
+                                        .FirstOrDefault()?
+                                        .GetParameters()
+                                        .ToArray();
+
+                    var instances = SpeckContainer.Instance.GetInstances(parameterTypes);
+                    SpeckContainer.Instance.InjectSingleton(speckType, speckAttribute?.ReferencedType, instances);
                     break;
                 case SpeckType.PerRequest:
                     SpeckContainer.Instance.InjectType(speckType);
@@ -67,14 +91,12 @@ namespace SpeckyStandard.DI
             }
         }
 
-        private void InjectPartialSpeck(List<object> formattersStillAwaitingConstruction, Type speckType)
+        private void InjectPartialSpeck(Type speckType)
         {
             var formattedObject = FormatterServices.GetUninitializedObject(speckType);
 
             SetAutoSpeckProperties(speckType, formattedObject);
             SetAutoSpeckFields(speckType, formattedObject);
-
-            formattersStillAwaitingConstruction.Add(formattedObject);
 
             var speckAttribute = speckType.GetAttribute<SpeckAttribute>();
             var injectionMode = speckAttribute?.SpeckType ?? SpeckType.Singleton;
@@ -106,12 +128,14 @@ namespace SpeckyStandard.DI
             {
                 try
                 {
-                    formattedObject.GetType().GetConstructor(parameterTypes).Invoke(formattedObject, SpeckContainer.Instance.GetInstances(parameterTypes));
+                    var instances = SpeckContainer.Instance.GetInstances(parameterTypes);
+                    var constructor = formattedObject.GetType().GetConstructor(parameterTypes);
+                    constructor.Invoke(formattedObject, instances);
                 }
                 catch (TargetParameterCountException)
                 {
                     Log.Print($"{speckType.Name} has a constructor looking for types"
-                            + $" {parameterTypes.Select(parameterInfo => parameterInfo.Name).DelimitedText(", ")}"
+                            + $" {parameterTypes.Select(parameterInfo => parameterInfo.Name).ToDelimitedString(", ")}"
                             + " however if appears they aren't Specked.\n"
                             + $"Try adding {nameof(AutoSpeckAttribute)} to the parameter and specifying a typeof if the parameter is the base of another Speck.\n"
                             + "Example: If your parameter expected a specific type but you have a derived type Specked: \n"

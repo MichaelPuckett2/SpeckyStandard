@@ -18,13 +18,16 @@ namespace SpeckyStandard
         /// Starts the strapping and injection process.
         /// Note: It is important that this is performed first in your application and in the main application threading context.
         /// </summary>
-        public static void Start()
+        /// <param name="profile">The profile used to start strapping.</param>
+        public static void Start(string profile = "")
         {
             if (IsStrappingStarted)
             {
                 Log.Print($"{nameof(SpeckAutoStrapper)}.{nameof(Start)} called but strapping is already started. Returning from call...", PrintType.DebugWindow);
                 return;
             }
+
+            GlobalConfiguration.Profile = profile;
 
             Log.Print("Strapping...", PrintType.DebugWindow);
 

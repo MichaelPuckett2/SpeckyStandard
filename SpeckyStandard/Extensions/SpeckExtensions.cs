@@ -9,9 +9,13 @@ namespace SpeckyStandard.Extensions
 {
     internal static class SpeckExtensions
     {
-        public static T GetAttribute<T>(this Type type) where T : Attribute
+        public static T GetAttribute<T>(this Type type, Predicate<T> when = null) where T : Attribute
         {
-            return (T)type.GetCustomAttribute(typeof(T));
+            if (when == null) when = (obj) => true;
+            T customAttribute = (T)type.GetCustomAttribute(typeof(T));
+            return when.Invoke(customAttribute) 
+                 ? customAttribute 
+                 : null;
         }
 
         public static T GetAttribute<T>(this PropertyInfo propertyInfo) where T : Attribute
@@ -41,16 +45,11 @@ namespace SpeckyStandard.Extensions
                                      .Where(fieldInfo => fieldInfo.GetCustomAttribute(typeof(AutoSpeckAttribute)) != null)
                                      .Select(fieldInfo => fieldInfo.FieldType);
 
-            var dependantContructorParameterTypes = speckType
-                                                   .GetConstructors(Constants.BindingFlags)
-                                                   .FirstOrDefault()?
-                                                   .GetParameters()
-                                                   .Select(parameterInfo =>
-                                                   {
-                                                       var autoSpeckAttribute = parameterInfo.GetAttribute<AutoSpeckAttribute>();
-                                                       return autoSpeckAttribute?.OfType ?? parameterInfo.ParameterType;
-                                                   })
-                                                   ?? Enumerable.Empty<Type>();
+            var dependantContructorParameterTypes = from constructor in speckType.GetConstructors(Constants.BindingFlags)
+                                                    from parameterInfo in constructor.GetParameters()
+                                                    let autoSpeckAttribute = parameterInfo.GetAttribute<AutoSpeckAttribute>()
+                                                    where autoSpeckAttribute != null
+                                                    select autoSpeckAttribute.OfType;
 
             var hasDependendantTypes = dependantPropertyTypes
                                       .Concat(dependantFieldTypes)
@@ -80,29 +79,15 @@ namespace SpeckyStandard.Extensions
                                                     where constructor != null
                                                     from parameterInfo in constructor.GetParameters()
                                                     let autoSpeckAttribute = parameterInfo.GetAttribute<AutoSpeckAttribute>()
+                                                    let speckAttribute = parameterInfo.ParameterType.GetAttribute<SpeckAttribute>()
+                                                    where speckAttribute != null
                                                     select autoSpeckAttribute?.OfType ?? parameterInfo.ParameterType;
-
-            ThrowIfNotGivenSpeckAttribute(dependantPropertyTypes);
-            ThrowIfNotGivenSpeckAttribute(dependantFieldTypes);
-            ThrowIfNotGivenSpeckAttribute(dependantContructorParameterTypes);
 
             return dependantPropertyTypes
                   .Concat(dependantFieldTypes)
                   .Concat(dependantContructorParameterTypes)
                   .Distinct()
                   .ToList();
-        }
-
-        private static void ThrowIfNotGivenSpeckAttribute(IEnumerable<Type> dependantPropertyTypes)
-        {
-            foreach (var type in dependantPropertyTypes)
-                ThrowIfNotGivenSpeckAttribute(type);
-        }
-
-        private static void ThrowIfNotGivenSpeckAttribute(Type type)
-        {
-            if (!type.IsInterface && type.GetAttribute<SpeckAttribute>() == null)
-                throw new Exception($"{type.Name} is a dependant of another Speck but does not have it's own {nameof(SpeckAttribute)} provided.\nTypes given the {nameof(AutoSpeckAttribute)}, as a dependant of another Speck, must have the {nameof(SpeckAttribute)}");
         }
 
         internal static List<Type> GetDependencyOrderedSpecks(this IEnumerable<Type> speckTypes)

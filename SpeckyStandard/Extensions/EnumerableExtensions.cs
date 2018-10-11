@@ -6,7 +6,7 @@ namespace SpeckyStandard.Extensions
 {
     public static class EnumerableExtensions
     {
-        public static string DelimitedText(this IEnumerable<string> stringEnumeration, string delimiter)
+        public static string ToDelimitedString(this IEnumerable<string> stringEnumeration, string delimiter)
         {
             stringEnumeration = stringEnumeration.ToList();
 
