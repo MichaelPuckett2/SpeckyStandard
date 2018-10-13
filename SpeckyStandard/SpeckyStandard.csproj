@@ -2,6 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Michael Puckett, II</Authors>
+    <Company>Triple G3</Company>
+    <Description>Specky is an annotation based dependency injection (DI) container service.  It also has other quick up and running features and components.</Description>
+    <Copyright>2018</Copyright>
+    <PackageProjectUrl>https://github.com/MichaelPuckett2/SpeckyStandard</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/MichaelPuckett2/SpeckyStandard</RepositoryUrl>
+    <PackageLicenseUrl>https://github.com/MichaelPuckett2/SpeckyStandard/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryType>Open Source</RepositoryType>
+    <PackageTags>DI, Dependency Injection, Spring, Springboot, MVVM</PackageTags>
+    <PackageReleaseNotes>This is the early version of Specky.  Although it currently works, as is, it has not been fully testesd and many features have not yet been added.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
