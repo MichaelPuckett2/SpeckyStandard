@@ -30,7 +30,7 @@ See the various ways that injection is annotated on the types.
     public class SecondTestType : ITestType
     {
         // Initializes FirstTestType via FirstTestType dependency.
-        [AutoSpeck] 
+        [SpeckAuto] 
         public FirstTestType FirstTestType { get; set; }
 
         public int Id => FirstTestType.Id;
@@ -44,7 +44,7 @@ See the various ways that injection is annotated on the types.
     public class TestTypeViewModel : NotifyBase
     {
         // Intializes firstTestType via FirstTestType dependency.
-        [AutoSpeck] 
+        [SpeckAuto] 
         private FirstTestType firstTestType;
         
         private SecondTestType secondTestType;
@@ -61,7 +61,7 @@ See the various ways that injection is annotated on the types.
         }
 
         // Initializes SecondTestType via SecondTestType dependency.
-        [AutoSpeck] 
+        [SpeckAuto] 
         public SecondTestType SecondTestType
         {
             get => secondTestType;
@@ -73,7 +73,7 @@ See the various ways that injection is annotated on the types.
         }
 
         // Initializes ThirdTestType via ITestType dependency.
-        [AutoSpeck] 
+        [SpeckAuto] 
         public ITestType ThirdTestType
         {
             get => thirdTestType;
@@ -92,7 +92,7 @@ See the various ways that injection is annotated on the types.
     public partial class MainWindow : Window
     {
         // Inject the ViewModel automatically into a base type.
-        [AutoSpeck(typeof(TestTypeViewModel))]
+        [SpeckAuto(typeof(TestTypeViewModel))]
         public INotifyPropertyChanged ViewModel { get; }
 
         public MainWindow()
@@ -107,7 +107,7 @@ See the various ways that injection is annotated on the types.
     [Speck]
     public partial class MainWindow : Window
     {
-        public MainWindow([AutoSpeck(typeof(TestTypeViewModel))] INotifyPropertyChanged viewModel)
+        public MainWindow([SpeckAuto(typeof(TestTypeViewModel))] INotifyPropertyChanged viewModel)
         {
             InitializeComponent();
             DataContext = viewModel;
@@ -147,27 +147,27 @@ See the various ways that injection is annotated on the types.
         public string Ip { get; set; }
     }
 
-    [RestPolling("http://ip.jsontest.com/", Interval = 1000)]
+    [SpeckRestPolling("http://ip.jsontest.com/", Interval = 1000)]
     public class IpAddressContext : NotifyBase
     {
-        [RestData(CanNotify = true)]
+        [SpeckRestData(CanNotify = true)]
         public IpAddress IpAddress { get; set; }
     }
 
     // or...
 
-    [RestPolling]
+    [SpeckRestPolling]
     public class IpAddressContext : NotifyBase
     {
-        [RestData("http://ip.jsontest.com/")]
+        [SpeckRestData("http://ip.jsontest.com/")]
         public IpAddress IpAddress { get; set; }
     }
 
     // or...
 
-    [RestPolling("http://")]
+    [SpeckRestPolling("http://")]
     public class IpAddressContext : NotifyBase
     {
-        [RestData("ip.jsontest.com/")]
+        Speck[RestData("ip.jsontest.com/")]
         public IpAddress IpAddress { get; set; }
     }
