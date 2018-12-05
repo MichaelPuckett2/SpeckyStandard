@@ -3,7 +3,7 @@ using System;
 
 namespace SpeckyStandard.Controllers
 {
-    internal interface IDalController<TDalAttribute> where TDalAttribute : ContextBaseAttribute
+    internal interface IDalController<TDalAttribute> where TDalAttribute : SpeckContextBaseAttribute
     {
         bool CanStart { get; }
         bool IsStarted { get; }

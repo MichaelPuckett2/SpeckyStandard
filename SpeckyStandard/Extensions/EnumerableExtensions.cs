@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -20,6 +21,6 @@ namespace SpeckyStandard.Extensions
                 stringBuilder.Append($"{delimiter}{enumerator.Current}");
 
             return stringBuilder.ToString();
-        }
+        }        
     }
 }

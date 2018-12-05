@@ -14,14 +14,14 @@ using System.Threading.Tasks;
 
 namespace SpeckyStandard.Controllers
 {
-    internal class RestDalController : IDalController<RestPollingAttribute>
+    internal class RestDalController : IDalController<SpeckRestPollingAttributeAttribute>
     {
         private volatile bool isStarted;
         private volatile bool canContinue;
         public event EventHandler Started;
         public event EventHandler Stopped;
 
-        private List<SpeckDal<RestPollingAttribute>> RestSpeckDals { get; } = new List<SpeckDal<RestPollingAttribute>>();
+        private List<SpeckDal<SpeckRestPollingAttributeAttribute>> RestSpeckDals { get; } = new List<SpeckDal<SpeckRestPollingAttributeAttribute>>();
 
         private RestDalController() { }
         public static RestDalController Instance { get; } = new RestDalController();
@@ -58,9 +58,9 @@ namespace SpeckyStandard.Controllers
 
         public void Stop() => canContinue = false;
 
-        public void Add(SpeckDal<RestPollingAttribute> restSpeckDal)
+        public void Add(SpeckDal<SpeckRestPollingAttributeAttribute> restSpeckDal)
         {
-            if (IsStarted) throw new Exception($"Cannot add {nameof(SpeckDal<RestPollingAttribute>)} while controller is started.");
+            if (IsStarted) throw new Exception($"Cannot add {nameof(SpeckDal<SpeckRestPollingAttributeAttribute>)} while controller is started.");
             RestSpeckDals.Add(restSpeckDal);
         }
 
@@ -97,12 +97,12 @@ namespace SpeckyStandard.Controllers
             }
         }
 
-        private void ProcessRestDalContext(SpeckDal<RestPollingAttribute> restDalModel)
+        private void ProcessRestDalContext(SpeckDal<SpeckRestPollingAttributeAttribute> restDalModel)
         {
             if (restDalModel.DalAttribute.LastInterval.IsNowPast(restDalModel.DalAttribute.Interval))
             {
                 var restDals = from propertyInfo in restDalModel.InjectionModel.Instance.GetType().GetProperties()
-                               let restDal = propertyInfo.GetAttribute<RestDataAttribute>()
+                               let restDal = propertyInfo.GetAttribute<SpeckRestDataAttribute>()
                                where restDal != null
                                select new { PropInfo = propertyInfo, RestDal = restDal };
 

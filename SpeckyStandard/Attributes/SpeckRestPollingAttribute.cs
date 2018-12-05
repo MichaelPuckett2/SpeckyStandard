@@ -6,12 +6,12 @@ namespace SpeckyStandard.Attributes
     /// A Speck used to declare a type to be used as a data access layer via rest.
     /// HttpClient and NewtonSoft is used to call the url provided and update the values given the RestDalAttribute. 
     /// </summary>
-    public sealed class RestPollingAttribute : ContextBaseAttribute
+    public sealed class SpeckRestPollingAttributeAttribute : SpeckContextBaseAttribute
     {
         private int interval = DefaultInterval;
 
-        public RestPollingAttribute() { }
-        public RestPollingAttribute(string headUrl)
+        public SpeckRestPollingAttributeAttribute() { }
+        public SpeckRestPollingAttributeAttribute(string headUrl)
         {
             HeadUrl = headUrl;
         }
@@ -31,7 +31,7 @@ namespace SpeckyStandard.Attributes
             {
                 interval = value > 0
                          ? value
-                         : throw new Exception($"{nameof(RestPollingAttribute)}.{nameof(Interval)} must be greater than 0.");
+                         : throw new Exception($"{nameof(SpeckRestPollingAttributeAttribute)}.{nameof(Interval)} must be greater than 0.");
             }
         }
 

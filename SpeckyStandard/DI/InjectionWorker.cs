@@ -3,11 +3,10 @@ using SpeckyStandard.Enums;
 using SpeckyStandard.Extensions;
 using SpeckyStandard.Logging;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
-using System.Text;
+using static SpeckyStandard.Logging.Log;
 
 namespace SpeckyStandard.DI
 {
@@ -18,7 +17,7 @@ namespace SpeckyStandard.DI
 
         internal void Start()
         {
-            Log.Print("Locating Specks.", PrintType.DebugWindow);
+            Print("Locating Specks.", PrintType.DebugWindow);
 
             StartConfigs();
             StartSpecks();
@@ -28,40 +27,45 @@ namespace SpeckyStandard.DI
         {
             var configTypes = CallingAssembly
                              .TypesWithAttribute<SpeckConfigurationAttribute>(attribute => attribute.Profile == GlobalConfiguration.Profile)
-                             .ToList();
-
-            foreach (var configType in configTypes)
-                SpeckContainer.Instance.InjectSingleton(configType);
+                             .WithEach((Type configType) =>
+                             {
+                                 SpeckContainer
+                                 .Instance
+                                 .InjectSingleton(configType)
+                                 .TryGetAttribute(out SpeckLogAttribute speckLog)
+                                 .PulseOnTrue(() => Print(speckLog.Message, speckLog.PrintType));
+                             });
         }
 
         private void StartSpecks()
         {
-            var speckTypes = CallingAssembly
-                            .TypesWithAttribute<SpeckAttribute>()
-                            .ToList();
+            CallingAssembly
+               .Log($"Specky Started {DateTime.Now}", PrintType.DebugWindow)
+               .TypesWithAttribute<SpeckAttribute>()
+               .Log("Ordering Specks.", PrintType.DebugWindow)
+               .GetDependencyOrderedSpecks()
+               .Log("Injecting Specks.", PrintType.DebugWindow)
+               .WithEach((Type speckType) =>
+               {
+                   speckType
+                       .HasSpeckDependencies()
+                       .Pulse(() => InjectPartialSpeck(speckType),
+                              () => InjectFullSpeck(speckType));
+               })
+               .SelectMany(speck => speck.GetSpeckPosts())
+               .WithEach(((SpeckPostAttribute speckPost, MethodInfo method) tuple) =>
+               {
+                   Print($"SpeckPost {tuple.method.DeclaringType.Name}:{tuple.method.Name}", PrintType.DebugWindow);
 
-            Log.Print("Ordering Specks.", PrintType.DebugWindow);
+                   tuple
+                    .method
+                    .Invoke(SpeckContainer.Instance.GetInstance(tuple.method.DeclaringType), null);
 
-            speckTypes = speckTypes.GetDependencyOrderedSpecks();
-
-            Log.Print("Injecting Specks.", PrintType.DebugWindow);
-
-            InjectOrderedSpecks(speckTypes);
-        }
-
-        private void InjectOrderedSpecks(IEnumerable<Type> speckTypes)
-        {
-            foreach (var speckType in speckTypes)
-            {
-                if (speckType.HasSpeckDependencies())
-                {
-                    InjectPartialSpeck(speckType);
-                }
-                else
-                {
-                    InjectFullSpeck(speckType);
-                }
-            }
+                   tuple
+                    .method
+                    .TryGetAttribute(out SpeckLogAttribute speckLog)
+                    .PulseOnTrue(() => Print(speckLog.Message, speckLog.PrintType));
+               });
         }
 
         private void InjectFullSpeck(Type speckType)
@@ -89,14 +93,16 @@ namespace SpeckyStandard.DI
                 default:
                     throw new Exception($"Unknown {nameof(SpeckType)}");
             }
+
+            Print($"Injected {speckType.Name}", PrintType.DebugWindow);
         }
 
         private void InjectPartialSpeck(Type speckType)
         {
             var formattedObject = FormatterServices.GetUninitializedObject(speckType);
 
-            SetAutoSpeckProperties(speckType, formattedObject);
-            SetAutoSpeckFields(speckType, formattedObject);
+            SetSpeckAutoProperties(speckType, formattedObject);
+            SetSpeckAutoFields(speckType, formattedObject);
 
             var speckAttribute = speckType.GetAttribute<SpeckAttribute>();
             var injectionMode = speckAttribute?.SpeckType ?? SpeckType.Singleton;
@@ -115,48 +121,67 @@ namespace SpeckyStandard.DI
                                 .GetParameters()
                                 .Select(parameterInfo =>
                                 {
-                                    var autoSpeckAttribute = parameterInfo.GetAttribute<AutoSpeckAttribute>();
-                                    return autoSpeckAttribute?.OfType ?? parameterInfo.ParameterType;
+                                    var SpeckAutoAttribute = parameterInfo.GetAttribute<SpeckAutoAttribute>();
+                                    return SpeckAutoAttribute?.OfType ?? parameterInfo.ParameterType;
                                 })
                                 .ToArray();
 
             if (!parameterTypes?.Any() ?? false)
             {
-                formattedObject.GetType().GetConstructor(Type.EmptyTypes).Invoke(formattedObject, null);
+                formattedObject
+                    .GetType()
+                    .GetConstructor(Type.EmptyTypes)
+                    .Invoke(formattedObject, null);
             }
             else
             {
                 try
                 {
-                    var instances = SpeckContainer.Instance.GetInstances(parameterTypes);
-                    var constructor = formattedObject.GetType().GetConstructor(parameterTypes);
+                    var instances = SpeckContainer
+                        .Instance
+                        .GetInstances(parameterTypes);
+
+                    var constructor = formattedObject
+                        .GetType()
+                        .GetConstructor(parameterTypes);
+
                     constructor.Invoke(formattedObject, instances);
                 }
                 catch (TargetParameterCountException)
                 {
-                    Log.Print($"{speckType.Name} has a constructor looking for types"
-                            + $" {parameterTypes.Select(parameterInfo => parameterInfo.Name).ToDelimitedString(", ")}"
-                            + " however if appears they aren't Specked.\n"
-                            + $"Try adding {nameof(AutoSpeckAttribute)} to the parameter and specifying a typeof if the parameter is the base of another Speck.\n"
-                            + "Example: If your parameter expected a specific type but you have a derived type Specked: \n"
-                            + "[AutoSpeck(typeof(TestViewModel))] INotifyProperyChanged viewModel", 
-                            PrintType.DebugWindow | PrintType.ThrowException);
+                    Print($"{speckType.Name} has a constructor looking for types"
+                          + $" {parameterTypes.Select(parameterInfo => parameterInfo.Name).ToDelimitedString(", ")}"
+                          + " however if appears they aren't Specked.\n"
+                          + $"Try adding {nameof(SpeckAutoAttribute)} to the parameter and specifying a typeof if the parameter is the base of another Speck.\n"
+                          + "Example: If your parameter expected a specific type but you have a derived type Specked: \n"
+                          + "[SpeckAuto(typeof(TestViewModel))] INotifyProperyChanged viewModel",
+                          PrintType.DebugWindow | PrintType.ThrowException);
                 }
             }
 
-            SpeckContainer.Instance.InjectSingleton(formattedObject, speckAttribute?.ReferencedType);
+
+
+            SpeckContainer
+                .Instance
+                .InjectSingleton(formattedObject, speckAttribute?.ReferencedType);
+
+            Print($"Injected {speckType.Name}", PrintType.DebugWindow);
         }
 
-        private static void SetAutoSpeckProperties(Type speckType, object formattedObject)
+        private static void SetSpeckAutoProperties(Type speckType, object formattedObject)
         {
-            var tuples = speckType.GetAutoSpeckPropertyAttributeTuples();
+            var tuples = speckType.GetSpeckAutoPropertyAttributeTuples();
 
             foreach (var tuple in tuples)
             {
-                var instanceType = tuple.AutoSpeckAttribute.OfType
+                var instanceType = tuple.SpeckAutoAttribute.OfType
                                 ?? tuple.PropertyInfo.PropertyType;
 
                 SetPropertyValue(formattedObject, tuple.PropertyInfo, instanceType);
+                tuple
+                    .PropertyInfo
+                    .TryGetAttribute(out SpeckLogAttribute speckLog)
+                    .PulseOnTrue(() => Print($"{speckType.Name} auto initialized. {speckLog.Message}", speckLog.PrintType));
             }
         }
 
@@ -182,21 +207,27 @@ namespace SpeckyStandard.DI
                 }
                 else
                 {
-                    Log.Print($"Cannot set AutoSpeck readonly property {nameof(speckProperty.Name)}.", DebugSettings.DebugPrintType);
+                    Print($"Cannot set SpeckAuto readonly property {nameof(speckProperty.Name)}.", DebugSettings.DebugPrintType);
                 }
             }
         }
 
-        private static void SetAutoSpeckFields(Type speckType, object formattedObject)
+        private static void SetSpeckAutoFields(Type speckType, object formattedObject)
         {
-            var tuples = speckType.GetAutoSpeckFieldAttributeTuples();
+            var tuples = speckType.GetSpeckAutoFieldAttributeTuples();
 
             foreach (var tuple in tuples)
             {
-                var instanceType = tuple.AutoSpeckAttribute.OfType
+                var instanceType = tuple.SpeckAutoAttribute.OfType
                                 ?? tuple.FieldInfo.FieldType;
 
-                tuple.FieldInfo.SetValue(formattedObject, SpeckContainer.Instance.GetInstance(instanceType), Constants.BindingFlags, null, null);
+                tuple
+                    .FieldInfo
+                    .SetValue(formattedObject, SpeckContainer.Instance.GetInstance(instanceType), Constants.BindingFlags, null, null);
+                tuple
+                    .FieldInfo
+                    .TryGetAttribute(out SpeckLogAttribute speckLog)
+                    .PulseOnTrue(() => Print($"{speckType.Name} auto initialized. {speckLog.Message}", speckLog.PrintType));
             }
         }
     }

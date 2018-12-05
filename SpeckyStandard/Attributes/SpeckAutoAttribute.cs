@@ -6,7 +6,7 @@ namespace SpeckyStandard.Attributes
     /// Used on properties and fields to auto initialize values based on existing Speck dependencies.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
-    public sealed class AutoSpeckAttribute : Attribute
+    public sealed class SpeckAutoAttribute : Attribute
     {
         /// <summary>
         /// The target Speck used to initialize the AutoSpeck.
@@ -17,7 +17,7 @@ namespace SpeckyStandard.Attributes
         /// Auto initializes the value with the appropriate Speck.
         /// </summary>
         /// <param name="ofType">Optional Speck target used to initialize the value.</param>
-        public AutoSpeckAttribute(Type ofType = null)
+        public SpeckAutoAttribute(Type ofType = null)
         {
             OfType = ofType;
         }

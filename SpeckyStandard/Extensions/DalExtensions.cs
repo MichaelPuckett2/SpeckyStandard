@@ -8,7 +8,7 @@ namespace SpeckyStandard.Extensions
 {
     internal static class DalExtensions
     {
-        internal static List<(PropertyInfo propertyInfo, T dal)> GetDalProperties<T>(this Type speckType) where T : ContextBaseAttribute
+        internal static List<(PropertyInfo propertyInfo, T dal)> GetDalProperties<T>(this Type speckType) where T : SpeckContextBaseAttribute
         {
             return speckType
                   .GetProperties(Constants.BindingFlags)

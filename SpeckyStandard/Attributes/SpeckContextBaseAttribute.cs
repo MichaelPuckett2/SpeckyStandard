@@ -3,5 +3,5 @@
 namespace SpeckyStandard.Attributes
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public abstract class ContextBaseAttribute : SpeckAttribute { }
+    public abstract class SpeckContextBaseAttribute : SpeckAttribute { }
 }

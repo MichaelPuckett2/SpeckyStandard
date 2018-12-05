@@ -18,16 +18,17 @@ namespace SpeckyStandard.DI
         SpeckContainer() { }
         static public SpeckContainer Instance { get; } = new SpeckContainer();
 
-        internal void InjectSingleton(Type type)
+        internal Type InjectSingleton(Type type)
         {
             var injectionModel = new InjectionModel(
                                      type: type,
                                      referencedType: type);
 
             InjectionModels.Add(injectionModel);
+            return type;
         }
 
-        internal void InjectSingleton(Type type, Type referencedType, object[] instances)
+        internal Type InjectSingleton(Type type, Type referencedType, object[] instances)
         {
             InjectionModel injectionModel = instances.Any()
                                           ? new InjectionModel(
@@ -39,13 +40,15 @@ namespace SpeckyStandard.DI
                                                 referencedType: referencedType);
 
             InjectionModels.Add(injectionModel);
+            return type;
         }
 
-        internal void InjectSingleton(object formattedObject, Type referencedType)
+        internal Type InjectSingleton(object formattedObject, Type referencedType)
         {
             var type = formattedObject.GetType();
             var injectionModel = new InjectionModel(type, formattedObject);
             InjectionModels.Add(injectionModel);
+            return type;
         }
 
         internal void InjectType<T>() => InjectType(typeof(T));
