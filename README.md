@@ -24,17 +24,14 @@
 
 3. Start when introductions are complete.
 
-        public class Worker
-        {
-            [SpeckAuto]
-            readonly Log log;
+        [SpeckAuto]
+        readonly Log log;
 
-            [SpeckPost]
-            public void Start()
-            {
-                Log.Print("Working...");
-                //...
-            }
+        [SpeckPost]
+        public void Start()
+        {
+            Log.Print("Working...");
+            //...
         }
 
 
