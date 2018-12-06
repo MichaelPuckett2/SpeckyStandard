@@ -14,21 +14,22 @@ namespace SpeckyStandard.DI
     public sealed class SpeckContainer
     {
         internal HashSet<InjectionModel> InjectionModels { get; } = new HashSet<InjectionModel>();
+        internal Dictionary<string, object> ConfigurationModels { get; } = new Dictionary<string, object>();
 
         SpeckContainer() { }
         static public SpeckContainer Instance { get; } = new SpeckContainer();
 
-        internal Type InjectSingleton(Type type)
+        internal InjectionModel InjectSingleton(Type type)
         {
             var injectionModel = new InjectionModel(
                                      type: type,
                                      referencedType: type);
 
             InjectionModels.Add(injectionModel);
-            return type;
+            return injectionModel;
         }
 
-        internal Type InjectSingleton(Type type, Type referencedType, object[] instances)
+        internal InjectionModel InjectSingleton(Type type, Type referencedType, object[] instances)
         {
             InjectionModel injectionModel = instances.Any()
                                           ? new InjectionModel(
@@ -40,26 +41,42 @@ namespace SpeckyStandard.DI
                                                 referencedType: referencedType);
 
             InjectionModels.Add(injectionModel);
-            return type;
+            return injectionModel;
         }
 
-        internal Type InjectSingleton(object formattedObject, Type referencedType)
+        internal InjectionModel InjectSingleton(object formattedObject, Type referencedType)
         {
             var type = formattedObject.GetType();
-            var injectionModel = new InjectionModel(type, formattedObject);
+            var injectionModel = new InjectionModel(type, formattedObject, referencedType);
             InjectionModels.Add(injectionModel);
-            return type;
+            return injectionModel;
         }
 
-        internal void InjectType<T>() => InjectType(typeof(T));
+        internal InjectionModel InjectType<T>() => InjectType(typeof(T));
 
-        internal void InjectType(Type type)
+        internal InjectionModel InjectType(Type type)
         {
             var injectionModel = new InjectionModel(
                                      type: type,
                                      injectionMode: SpeckType.PerRequest);
 
             InjectionModels.Add(injectionModel);
+            return injectionModel;
+        }
+
+        internal void InjectConfiguration(Type type)
+        {
+            var config = Activator.CreateInstance(type);
+
+            foreach (var propertyInfo in config.GetType().GetProperties(Constants.BindingFlags))
+            {
+                ConfigurationModels[propertyInfo.Name] = propertyInfo.GetValue(config);
+            }
+
+            foreach (var fieldInfo in config.GetType().GetFields(Constants.BindingFlags))
+            {               
+                ConfigurationModels[fieldInfo.Name] = fieldInfo.GetValue(config);
+            }
         }
 
         /// <summary>
@@ -94,6 +111,21 @@ namespace SpeckyStandard.DI
             }
         }
 
+        internal object GetConfigurationValue(string value)
+        {
+            return ConfigurationModels[value];
+        }
+
+        /// <summary>
+        /// Looks to see if Specky has the speck type injected.  Useful to prevent initializing specks of type PerRequest
+        /// </summary>
+        /// <param name="type">Speck Type to look up</param>
+        /// <returns></returns>
+        public bool HasSpeck(Type type)
+        {
+            return InjectionModels.FirstOrDefault(model => model.Type == type || model.ReferencedType == type) != null;
+        }
+
         ~SpeckContainer()
         {
             foreach (var injectionModel in InjectionModels)
@@ -102,53 +134,55 @@ namespace SpeckyStandard.DI
                     catch { }
         }
 
-        internal object[] GetInstances(ParameterInfo[] constructorParameters)
+        internal object[] GetParameterInstances(ParameterInfo[] constructorParameters)
         {
-            var objects = new List<object>();
+            var parameterInstances = new List<object>();
             foreach (var parameterInfo in constructorParameters)
             {
-                var speckValueAttribute = parameterInfo.GetCustomAttribute<SpeckValueAttribute>();
-                if (speckValueAttribute != null)
+                if (parameterInfo.TryGetAttribute(out SpeckConfigurationAutoAttribute speckConfigurationAutoAttribute))
                 {
-                    var configs = InjectionModels.Where(x => x.Type.GetAttribute<SpeckConfigurationAttribute>(att => att.Profile == GlobalConfiguration.Profile) != null);
+                    var configInjectionModels = InjectionModels.Where(x => x.Type.GetAttribute<SpeckConfigurationAttribute>(att => att.Profile == GlobalConfiguration.Profile) != null);
 
-                    object configValue = null;
-                    foreach (var config in configs)
+                    object configInstance = null;
+                    foreach (var configInjectionModel in configInjectionModels)
                     {
-                        foreach (var prop in config.Type.GetProperties(Constants.BindingFlags))
+                        foreach (var configProperty in configInjectionModel.Type.GetProperties(Constants.BindingFlags))
                         {
-                            if (prop.Name == speckValueAttribute.Key)
+                            if (configProperty.Name == speckConfigurationAutoAttribute.Key)
                             {
-                                configValue = prop.GetValue(config.Instance);
+                                configInstance = configProperty.GetValue(configInjectionModel.Instance);
                                 break;
                             }
                         }
 
-                        foreach (var field in config.Type.GetFields(Constants.BindingFlags))
+                        if (configInstance != null) continue;
+
+                        foreach (var field in configInjectionModel.Type.GetFields(Constants.BindingFlags))
                         {
-                            if (field.Name == speckValueAttribute.Key)
+                            if (field.Name == speckConfigurationAutoAttribute.Key)
                             {
-                                configValue = field.GetValue(config.Instance);
+                                configInstance = field.GetValue(configInjectionModel.Instance);
                                 break;
                             }
                         }
                     }
 
-                    objects.Add(configValue
-                             ?? throw new Exception($"{nameof(GetInstances)} didn't find value for key {speckValueAttribute.Key}.  Check the profile and configuration types to make sure the value was initialized."));
+                    parameterInstances.Add(configInstance
+                             ?? throw new Exception($"{nameof(GetParameterInstances)} didn't find value for key {speckConfigurationAutoAttribute.Key}.  Check the profile and configuration types to make sure the value was initialized."));
                 }
                 else
                 {
                     var instance = (from injectionModel in InjectionModels
-                                    where injectionModel.Type == parameterInfo.ParameterType || injectionModel.ReferencedType == parameterInfo.ParameterType
+                                    where injectionModel.Type == parameterInfo.ParameterType
+                                       || injectionModel.ReferencedType == parameterInfo.ParameterType
                                     select injectionModel.Instance)
                                    .FirstOrDefault();
 
-                    objects.Add(instance
-                             ?? throw new Exception($"{nameof(GetInstances)} didn't find instance for type {parameterInfo.ParameterType.Name}.  Make sure a Speck exists of that type."));
+                    parameterInstances.Add(instance
+                             ?? throw new Exception($"{nameof(GetParameterInstances)} didn't find instance for type {parameterInfo.ParameterType.Name}.  Make sure a Speck exists of that type."));
                 }
             }
-            return objects.ToArray();
+            return parameterInstances.ToArray();
         }
 
         internal object[] GetInstances(IEnumerable<Type> parameterTypes)

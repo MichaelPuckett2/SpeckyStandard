@@ -72,7 +72,8 @@ namespace SpeckyStandard.Extensions
         {
             var dependantPropertyTypes = speckType
                                         .GetProperties()
-                                        .Where(propertyInfo => propertyInfo.GetCustomAttribute(typeof(SpeckAutoAttribute)) != null)
+                                        .Where(propertyInfo => propertyInfo.GetCustomAttribute(typeof(SpeckAutoAttribute)) != null
+                                                            || propertyInfo.GetCustomAttribute(typeof(SpeckConfigurationAutoAttribute)) != null)
                                         .Select(propertyInfo => propertyInfo.PropertyType);
 
             var dependantFieldTypes = speckType
@@ -141,20 +142,20 @@ namespace SpeckyStandard.Extensions
             return orderedDependencies;
         }
 
-        internal static List<(PropertyInfo PropertyInfo, SpeckAutoAttribute SpeckAutoAttribute)> GetSpeckAutoPropertyAttributeTuples(this Type speckType)
+        internal static List<(PropertyInfo PropertyInfo, T Attribute)> GetPropertyAttributeTuples<T>(this Type speckType) where T:Attribute
         {
             var tuplePropertySpeckAutos = from propertyInfo in speckType.GetProperties(Constants.BindingFlags)
-                                          let SpeckAutoAttribute = propertyInfo.GetCustomAttribute<SpeckAutoAttribute>()
+                                          let SpeckAutoAttribute = propertyInfo.GetCustomAttribute<T>()
                                           where SpeckAutoAttribute != null
                                           select (propertyInfo, SpeckAutoAttribute);
 
             return tuplePropertySpeckAutos.ToList();
         }
 
-        internal static List<(FieldInfo FieldInfo, SpeckAutoAttribute SpeckAutoAttribute)> GetSpeckAutoFieldAttributeTuples(this Type speckType)
+        internal static List<(FieldInfo FieldInfo, T Attribute)> GetFieldAttributeTuples<T>(this Type speckType) where T:Attribute
         {
             var tuples = from fieldInfo in speckType.GetFields(Constants.BindingFlags)
-                         let SpeckAutoAttribute = fieldInfo.GetCustomAttribute<SpeckAutoAttribute>()
+                         let SpeckAutoAttribute = fieldInfo.GetCustomAttribute<T>()
                          where SpeckAutoAttribute != null
                          select (fieldInfo, SpeckAutoAttribute);
 

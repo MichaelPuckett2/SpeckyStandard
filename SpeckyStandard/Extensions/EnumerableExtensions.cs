@@ -21,6 +21,6 @@ namespace SpeckyStandard.Extensions
                 stringBuilder.Append($"{delimiter}{enumerator.Current}");
 
             return stringBuilder.ToString();
-        }        
+        }
     }
 }

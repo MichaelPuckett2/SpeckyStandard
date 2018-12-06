@@ -6,10 +6,10 @@ namespace SpeckyStandard.DI
 {
     internal sealed class InjectionModel
     {
-        internal InjectionModel(Type type, object instantiatedObject)
+        internal InjectionModel(Type type, object instantiatedObject, Type referencedType)
         {
             Type = type;
-            ReferencedType = type;
+            ReferencedType = referencedType;
             InjectionMode = SpeckType.Singleton;
             Instance = instantiatedObject;
         }

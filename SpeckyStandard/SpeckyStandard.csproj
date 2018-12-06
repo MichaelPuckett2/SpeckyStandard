@@ -17,7 +17,12 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <LangVersion>7.3</LangVersion>
+    <DocumentationFile>C:\Users\micha\source\repos\GitHub Repos\SpeckyStandard\SpeckyStandard\SpeckyStandard.xml</DocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="DI\SpeckContainer.cs~RF2474ad0.TMP" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />

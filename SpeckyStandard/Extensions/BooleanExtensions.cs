@@ -5,35 +5,15 @@ namespace SpeckyStandard.Extensions
     public static class BooleanExtensions
     {
         /// <summary>
-        /// Invokes an action when boolean is true.
-        /// </summary>
-        /// <param name="boolean"></param>
-        /// <param name="action">Action to invoke when boolean is true.</param>
-        public static void PulseOnTrue(this bool boolean, Action action)
-        {
-            if (boolean) action.Invoke();
-        }
-
-        /// <summary>
-        /// Invokes an action when boolean is false.
-        /// </summary>
-        /// <param name="boolean"></param>
-        /// <param name="action">Action to invoke when boolean is false.</param>
-        public static void PulseOnFalse(this bool boolean, Action action)
-        {
-            if (!boolean) action.Invoke();
-        }
-
-        /// <summary>
         /// Invokes seperate actions when boolean is true or false.
         /// </summary>
         /// <param name="boolean"></param>
-        /// <param name="trueAction">Action to invoke when boolean is true.</param>
-        /// <param name="falseAction">Action to invoke when boolean is false.</param>
-        public static void Pulse(this bool boolean, Action trueAction = null, Action falseAction = null)
+        /// <param name="True">Action to invoke when boolean is true.</param>
+        /// <param name="False">Action to invoke when boolean is false.</param>
+        public static void Pulse(this bool boolean, Action True = null, Action False = null)
         {
-            if (boolean) boolean.PulseOnTrue(trueAction);
-            else boolean.PulseOnFalse(falseAction);
+            if (boolean) True?.Invoke();
+            else False?.Invoke();
         }
 
         /// <summary>

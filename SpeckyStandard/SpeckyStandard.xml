@@ -1,0 +1,219 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SpeckyStandard</name>
+    </assembly>
+    <members>
+        <member name="T:SpeckyStandard.Attributes.SpeckAttribute">
+            <summary>
+            Injects a class as a Speck dependency
+            </summary>
+        </member>
+        <member name="P:SpeckyStandard.Attributes.SpeckAttribute.SpeckType">
+            <summary>
+            Describes whether the Speck will be a single instance or return a new instance for every injection.
+            </summary>
+        </member>
+        <member name="P:SpeckyStandard.Attributes.SpeckAttribute.ReferencedType">
+            <summary>
+            A reference type used when injecting Specks. 
+            ex: [Speck(typeof(ITestType))] public class Test ... will tell Specky to inject Test into all [SpeckAuto] decorated ITesetType's
+            </summary>
+        </member>
+        <member name="M:SpeckyStandard.Attributes.SpeckAttribute.#ctor(SpeckyStandard.Enums.SpeckType)">
+            <summary>
+            Speck with optional SpeckType
+            </summary>
+            <param name="speckType">The SpeckType used for the Speck</param>
+        </member>
+        <member name="M:SpeckyStandard.Attributes.SpeckAttribute.#ctor(System.Type)">
+            <summary>
+            Speck with alternate reference type.
+            Alternate references force the Speck to always be SpeckType.Singleton
+            </summary>
+            <param name="referencedType">The alternate type to reference the Speck</param>
+        </member>
+        <member name="T:SpeckyStandard.Attributes.SpeckAutoAttribute">
+            <summary>
+            Used on properties and fields to auto initialize values based on existing Speck dependencies.
+            </summary>
+        </member>
+        <member name="P:SpeckyStandard.Attributes.SpeckAutoAttribute.OfType">
+            <summary>
+            The target Speck used to initialize the AutoSpeck.
+            </summary>
+        </member>
+        <member name="M:SpeckyStandard.Attributes.SpeckAutoAttribute.#ctor(System.Type)">
+            <summary>
+            Auto initializes the value with the appropriate Speck.
+            </summary>
+            <param name="ofType">Optional Speck target used to initialize the value.</param>
+        </member>
+        <member name="T:SpeckyStandard.Attributes.SpeckPostAttribute">
+            <summary>
+            Specky calls this method after initializing all specks in the order of least dependent first and then by Order number if supplied.
+            </summary>
+        </member>
+        <member name="M:SpeckyStandard.Attributes.SpeckPostAttribute.#ctor(System.Int32)">
+            <summary>
+            Constructor that allows order number for ordering multiple post methods in a single class.
+            </summary>
+            <param name="order"></param>
+        </member>
+        <member name="P:SpeckyStandard.Attributes.SpeckPostAttribute.Order">
+            <summary>
+            The order in which Specky calls the post method per type from lowest to highest.
+            </summary>
+        </member>
+        <member name="T:SpeckyStandard.Attributes.SpeckRestPollingAttributeAttribute">
+            <summary>
+            A Speck used to declare a type to be used as a data access layer via rest.
+            HttpClient and NewtonSoft is used to call the url provided and update the values given the RestDalAttribute. 
+            </summary>
+        </member>
+        <member name="P:SpeckyStandard.Attributes.SpeckRestPollingAttributeAttribute.HeadUrl">
+            <summary>
+            The url used by HttpClient to download the string.
+            </summary>
+        </member>
+        <member name="P:SpeckyStandard.Attributes.SpeckRestPollingAttributeAttribute.Interval">
+            <summary>
+            The polling interval used.
+            </summary>
+        </member>
+        <member name="P:SpeckyStandard.Attributes.SpeckRestPollingAttributeAttribute.LastInterval">
+            <summary>
+            The last time polling took place.
+            </summary>
+        </member>
+        <member name="F:SpeckyStandard.Attributes.SpeckRestPollingAttributeAttribute.DefaultInterval">
+            <summary>
+            The default polling interval used if value is less than or equal to 0 or not provided.
+            </summary>
+        </member>
+        <member name="T:SpeckyStandard.DI.SpeckContainer">
+            <summary>
+            The Speck container that is used to store and reference existing specks.
+            </summary>
+        </member>
+        <member name="M:SpeckyStandard.DI.SpeckContainer.GetInstance``1(System.Boolean)">
+            <summary>
+            Retrieves a Speck via the T type used for lookup.
+            </summary>
+            <typeparam name="T">The type of Speck to retrieve</typeparam>
+            <returns>Returns initialied Speck or throws exception is no Speck is of the requested type.</returns>
+        </member>
+        <member name="M:SpeckyStandard.DI.SpeckContainer.HasSpeck(System.Type)">
+            <summary>
+            Looks to see if Specky has the speck type injected.  Useful to prevent initializing specks of type PerRequest
+            </summary>
+            <param name="type">Speck Type to look up</param>
+            <returns></returns>
+        </member>
+        <member name="T:SpeckyStandard.Enums.PrintType">
+            <summary>
+            The flagged type used to print debug messages in Specky.
+            </summary>
+        </member>
+        <member name="F:SpeckyStandard.Enums.PrintType.DebugWindow">
+            <summary>
+            Prints Specky debug statements to the debug window.
+            </summary>
+        </member>
+        <member name="F:SpeckyStandard.Enums.PrintType.LogFile">
+            <summary>
+            Not yet implemented.
+            </summary>
+        </member>
+        <member name="F:SpeckyStandard.Enums.PrintType.ThrowException">
+            <summary>
+            Throws an exception with the provided debug statement.
+            </summary>
+        </member>
+        <member name="F:SpeckyStandard.Enums.SpeckType.Singleton">
+            <summary>
+            Directs the Speck to act as a single instance.
+            </summary>
+        </member>
+        <member name="F:SpeckyStandard.Enums.SpeckType.PerRequest">
+            <summary>
+            Directs the Speck to act as a type and is initialized per request.
+            </summary>
+        </member>
+        <member name="M:SpeckyStandard.Extensions.BooleanExtensions.Pulse(System.Boolean,System.Action,System.Action)">
+            <summary>
+            Invokes seperate actions when boolean is true or false.
+            </summary>
+            <param name="boolean"></param>
+            <param name="True">Action to invoke when boolean is true.</param>
+            <param name="False">Action to invoke when boolean is false.</param>
+        </member>
+        <member name="M:SpeckyStandard.Extensions.BooleanExtensions.PulseOnTrue(System.Boolean,System.Predicate{System.Boolean})">
+            <summary>
+            Invokes a predicate when boolean is true.
+            </summary>
+            <param name="boolean"></param>
+            <param name="predicate">Predicate to invoke when boolean is true.</param>
+            <returns>Returns the result of the invoked predicate.</returns>
+        </member>
+        <member name="M:SpeckyStandard.Extensions.BooleanExtensions.PulseOnFalse(System.Boolean,System.Predicate{System.Boolean})">
+            <summary>
+            Invokes a predicate when boolean is false.
+            </summary>
+            <param name="boolean"></param>
+            <param name="predicate">Predicate to invoke when boolean is false.</param>
+            <returns>Returns the result of the invoked predicate.</returns>
+        </member>
+        <member name="M:SpeckyStandard.Extensions.BooleanExtensions.Pulse(System.Boolean,System.Predicate{System.Boolean},System.Predicate{System.Boolean})">
+            <summary>
+            Invokes seperate predicates when boolean is true or false.
+            </summary>
+            <param name="boolean"></param>
+            <param name="truePredicate">Predicate to invoke when boolean is true.</param>
+            <param name="falsePredicate">Predicate to invoke when boolean is false.</param>
+            <returns>Returns the result of the invoked predicate.</returns>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:SpeckyStandard.Extensions.ReflectionExtensions.TypesWithAttribute``1(System.Reflection.Assembly,System.Predicate{``0})" -->
+        <member name="M:SpeckyStandard.Extensions.TimeExtensions.IsNowPast(System.DateTime,System.TimeSpan)">
+            <summary>
+            Returns a boolean value indicating if the DateTime object is past the current time.
+            </summary>
+            <param name="dateTime">The DateTime object compared against.</param>
+            <param name="differenceInTime">The TImeSpan used to compare the difference in time.</param>
+            <returns>true if the DateTime is past the current time, including the difference in time.</returns>
+        </member>
+        <member name="M:SpeckyStandard.Extensions.TimeExtensions.IsNowPast(System.DateTime,System.Int32)">
+            <summary>
+            Returns a boolean value indicating if the DateTime object is past the current time.
+            </summary>
+            <param name="dateTime">The DateTime object compared against.</param>
+            <param name="differenceInTimeMS">The value in milliseconds used to compare the difference in time.</param>
+            <returns>true if the DateTime is past the current time, including the difference in time.</returns>
+        </member>
+        <member name="T:SpeckyStandard.Models.NotifyBase">
+            <summary>
+            A base model that implements INotifyPropertyChanged and eases notifications.
+            </summary>
+        </member>
+        <member name="M:SpeckyStandard.Models.NotifyBase.Notify(System.String)">
+            <summary>
+            Invokes PropertyChanged passing the supplied name.
+            Uses the calling members name if no name is supplied.
+            </summary>
+            <param name="callerName">The calling member name.  In typical cases this is left blank or the property name is given.</param>
+        </member>
+        <member name="T:SpeckyStandard.SpeckAutoStrapper">
+            <summary>
+            Straps the application and injects all dependencies.
+            Must be called at the applications point of entry and cannot be within a type inteded as a Speck.
+            </summary>
+        </member>
+        <member name="M:SpeckyStandard.SpeckAutoStrapper.Start(System.String)">
+            <summary>
+            Starts the strapping and injection process.
+            Note: It is important that this is performed first in your application and in the main application threading context.
+            </summary>
+            <param name="profile">The profile used to start strapping.</param>
+        </member>
+    </members>
+</doc>

@@ -3,9 +3,9 @@
 namespace SpeckyStandard.Attributes
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
-    public class SpeckValueAttribute : Attribute
+    public class SpeckConfigurationAutoAttribute : Attribute
     {
-        public SpeckValueAttribute(string key) => Key = key;
+        public SpeckConfigurationAutoAttribute(string key) => Key = key;
         public string Key { get; }
     }
 }

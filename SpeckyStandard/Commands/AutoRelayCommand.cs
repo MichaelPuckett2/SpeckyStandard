@@ -21,7 +21,7 @@ namespace SpeckyStandard.Commands
             CanExecutePredicates = commandBindings.CanExecutePredicates.ToList();
             BindingModel = commandBindings.BindingModel;
             BindingPropertNames = commandBindings.BindingPropertNames.ToList();
-            BindingModel.PropertyChanged += (s, e) => BindingPropertNames.Contains(e.PropertyName).PulseOnTrue(Update);
+            BindingModel.PropertyChanged += (s, e) => BindingPropertNames.Contains(e.PropertyName).Pulse(True: Update);
         }
 
         public bool CanExecute(object parameter) => CanExecutePredicates.All(canExecute => canExecute(parameter));
