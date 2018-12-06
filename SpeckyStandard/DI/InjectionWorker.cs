@@ -21,7 +21,7 @@ namespace SpeckyStandard.DI
             Print("Locating Configurations.", PrintType.DebugWindow);
 
             var speckyConfigurations = CallingAssembly
-                                      .TypesWithAttribute<SpeckConfigurationAttribute>(speckConfiguration => speckConfiguration.Profile == GlobalConfiguration.Profile);
+                                      .TypesWithAttribute<SpeckConfigurationAttribute>(speckConfiguration => speckConfiguration.Configuration == GlobalConfiguration.Profile);
 
             Print("Injecting Configurations.", PrintType.DebugWindow);
 

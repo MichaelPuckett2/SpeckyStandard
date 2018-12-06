@@ -141,7 +141,7 @@ namespace SpeckyStandard.DI
             {
                 if (parameterInfo.TryGetAttribute(out SpeckConfigurationAutoAttribute speckConfigurationAutoAttribute))
                 {
-                    var configInjectionModels = InjectionModels.Where(x => x.Type.GetAttribute<SpeckConfigurationAttribute>(att => att.Profile == GlobalConfiguration.Profile) != null);
+                    var configInjectionModels = InjectionModels.Where(x => x.Type.GetAttribute<SpeckConfigurationAttribute>(att => att.Configuration == GlobalConfiguration.Profile) != null);
 
                     object configInstance = null;
                     foreach (var configInjectionModel in configInjectionModels)
