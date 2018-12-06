@@ -46,7 +46,7 @@
             readonly List<string> Names = new List<string>()
             {
                 "Mathew", "Mark", "Luke", "John"
-        };
+            };
         }
 
 2. Set Configurations.
