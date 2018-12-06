@@ -12,7 +12,7 @@ namespace SpeckyStandard.Extensions
         /// </summary>
         /// <typeparam name="T">Attribute type</typeparam>
         /// <param name="assembly">The assembly to search.</param>
-        /// <returns>IEnumerable<Type> of types that have the T attribute.</returns>
+        /// <returns>IEnumerable&lt;Type&gt; of types that have the T attribute.</returns>
         public static IEnumerable<Type> TypesWithAttribute<T>(this Assembly assembly, Predicate<T> when = null) where T : Attribute
         {
             if (when == null) when = (obj) => true;

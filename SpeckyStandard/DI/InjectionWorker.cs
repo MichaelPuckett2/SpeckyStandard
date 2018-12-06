@@ -1,5 +1,6 @@
 ﻿using SpeckyStandard.Attributes;
 using SpeckyStandard.Enums;
+using SpeckyStandard.Exceptions;
 using SpeckyStandard.Extensions;
 using SpeckyStandard.Logging;
 using System;
@@ -14,7 +15,7 @@ namespace SpeckyStandard.DI
     internal sealed class InjectionWorker
     {
         private readonly Assembly CallingAssembly;
-        internal InjectionWorker(Assembly callingAssembly) => CallingAssembly = callingAssembly;      
+        internal InjectionWorker(Assembly callingAssembly) => CallingAssembly = callingAssembly;
 
         internal void Start()
         {
@@ -30,18 +31,41 @@ namespace SpeckyStandard.DI
                 .TypesWithAttribute<SpeckAttribute>()
                 .Log("Injecting Specks.", PrintType.DebugWindow)
                 .ForEach(InjectSpeck)
-                .ForEach(RunSpeckPost);
+                .SelectMany(speck => speck.GetMethods(Constants.BindingFlags).Select(methodInfo => new { speck, methodInfo }))
+                .ForEach(a => InvokeSpeckyStrappedMethods(a.speck, a.methodInfo));
         }
 
-        private static void RunSpeckPost(Type speck)
+        private void InvokeSpeckyStrappedMethods(Type speckType, MethodInfo methodInfo)
         {
-            speck
-                .GetMethods(Constants.BindingFlags)
-                .ForEach((MethodInfo methodInfo) =>
+            methodInfo
+                .TryGetAttribute(out SpeckyStrappedAttribute speckyStrappedAttribute)
+                .Pulse(True: () =>
                 {
-                    methodInfo
-                        .TryGetAttribute(out SpeckPostAttribute speckPostAttribute)
-                        .Pulse(True: () => methodInfo.Invoke(SpeckContainer.Instance.GetInstance(speck), null));
+                    var initializedParameters = new List<object>();
+
+                    foreach (var parameterInfo in methodInfo.GetParameters())
+                    {
+                        if (parameterInfo.TryGetAttribute(out SpeckConfigurationAutoAttribute speckConfiguration))
+                        {
+                            var key = speckConfiguration.ConfigurationKey;
+                            if (string.IsNullOrEmpty(key)) key = parameterInfo.Name;
+
+                            initializedParameters.Add(SpeckContainer.Instance.GetConfigurationValue(key));
+                            continue;
+                        }
+
+                        var speckInstance = SpeckContainer.Instance.GetInstance(parameterInfo.GetAttribute<SpeckAutoAttribute>()?.OfType ?? parameterInfo.ParameterType);
+
+                        if (speckInstance != null)
+                        {
+                            initializedParameters.Add(speckInstance);
+                            continue;
+                        }
+
+                        throw new SpeckMissingException(speckType, parameterInfo.ParameterType, methodInfo, parameterInfo);
+                    }
+
+                    methodInfo.Invoke(SpeckContainer.Instance.GetInstance(speckType), initializedParameters.Any() ? initializedParameters.ToArray() : null);
                 });
         }
 
@@ -93,6 +117,7 @@ namespace SpeckyStandard.DI
 
             }
 
+            RunSpeckPost(speckType);
             return initializingObject;
         }
 
@@ -244,6 +269,45 @@ namespace SpeckyStandard.DI
                     Print($"Cannot set SpeckAuto readonly property {nameof(speckProperty.Name)}.", DebugSettings.DebugPrintType);
                 }
             }
+        }
+
+        private static void RunSpeckPost(Type speck)
+        {
+            speck
+                .GetMethods(Constants.BindingFlags)
+                .ForEach((MethodInfo methodInfo) =>
+                {
+                    methodInfo
+                        .TryGetAttribute(out SpeckPostAttribute speckPostAttribute)
+                        .Pulse(True: () =>
+                        {
+                            var initializedParameters = new List<object>();
+
+                            foreach (var parameterInfo in methodInfo.GetParameters())
+                            {
+                                if (parameterInfo.TryGetAttribute(out SpeckConfigurationAutoAttribute speckConfiguration))
+                                {
+                                    var key = speckConfiguration.ConfigurationKey;
+                                    if (string.IsNullOrEmpty(key)) key = parameterInfo.Name;
+
+                                    initializedParameters.Add(SpeckContainer.Instance.GetConfigurationValue(key));
+                                    continue;
+                                }
+
+                                var speckInstance = GetOrInjectSpeck(parameterInfo.GetAttribute<SpeckAutoAttribute>()?.OfType ?? parameterInfo.ParameterType);
+
+                                if (speckInstance != null)
+                                {
+                                    initializedParameters.Add(speckInstance);
+                                    continue;
+                                }
+
+                                throw new SpeckMissingException(speck, parameterInfo.ParameterType, methodInfo, parameterInfo);
+                            }
+
+                            methodInfo.Invoke(SpeckContainer.Instance.GetInstance(speck), initializedParameters.Any() ? initializedParameters.ToArray() : null);
+                        });
+                });
         }
     }
 }

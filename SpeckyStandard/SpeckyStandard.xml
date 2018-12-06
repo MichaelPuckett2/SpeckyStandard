@@ -107,6 +107,34 @@
             The default polling interval used if value is less than or equal to 0 or not provided.
             </summary>
         </member>
+        <member name="T:SpeckyStandard.Attributes.SpeckyStrappedAttribute">
+            <summary>
+            Invokes method after all Specks are injected and after all strapping operations. Optionally a configuration name can be used to invoke only during that configuration.
+            </summary>
+        </member>
+        <member name="M:SpeckyStandard.Attributes.SpeckyStrappedAttribute.#ctor">
+            <summary>
+            Tells Specky to invoke the method once all strapping is complete regardless of configuration.
+            Defaults ConfigurationMode to IgnoreConfiguration.
+            </summary>
+        </member>
+        <member name="M:SpeckyStandard.Attributes.SpeckyStrappedAttribute.#ctor(SpeckyStandard.Enums.ConfigurationMode,System.String)">
+            <summary>
+            Tells Specky to invoke the method once all strapping is complete.
+            </summary>
+            <param name="configurationMode">The configuration mode used to determine if the method should be invoked.</param>
+            <param name="configurationName">The configuration name used to determine if the method should be invoked.  Used in conjunction with ConfigurationMode</param>
+        </member>
+        <member name="P:SpeckyStandard.Attributes.SpeckyStrappedAttribute.ConfigurationName">
+            <summary>
+            Configuration used to invoke the SpeckyStrapped method.
+            </summary>
+        </member>
+        <member name="P:SpeckyStandard.Attributes.SpeckyStrappedAttribute.ConfigurationMode">
+            <summary>
+            The configuration mode used to determine whether or not the method is invoked.
+            </summary>
+        </member>
         <member name="T:SpeckyStandard.DI.SpeckContainer">
             <summary>
             The Speck container that is used to store and reference existing specks.
@@ -125,6 +153,26 @@
             </summary>
             <param name="type">Speck Type to look up</param>
             <returns></returns>
+        </member>
+        <member name="T:SpeckyStandard.Enums.ConfigurationMode">
+            <summary>
+            Tells Specky how to handle configuration logic.
+            </summary>
+        </member>
+        <member name="F:SpeckyStandard.Enums.ConfigurationMode.IgnoreConfiguration">
+            <summary>
+            The configuration name is ignored.
+            </summary>
+        </member>
+        <member name="F:SpeckyStandard.Enums.ConfigurationMode.ExactConfiguration">
+            <summary>
+            The configuration name must match.
+            </summary>
+        </member>
+        <member name="F:SpeckyStandard.Enums.ConfigurationMode.AllExceptConfiguration">
+            <summary>
+            The configuration name cannot match.
+            </summary>
         </member>
         <member name="T:SpeckyStandard.Enums.PrintType">
             <summary>
@@ -154,6 +202,11 @@
         <member name="F:SpeckyStandard.Enums.SpeckType.PerRequest">
             <summary>
             Directs the Speck to act as a type and is initialized per request.
+            </summary>
+        </member>
+        <member name="T:SpeckyStandard.Exceptions.SpeckMissingException">
+            <summary>
+            Exception indicates Specky was unable to apply one Speck to another Speck.
             </summary>
         </member>
         <member name="M:SpeckyStandard.Extensions.BooleanExtensions.Pulse(System.Boolean,System.Action,System.Action)">
@@ -189,7 +242,14 @@
             <param name="falsePredicate">Predicate to invoke when boolean is false.</param>
             <returns>Returns the result of the invoked predicate.</returns>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:SpeckyStandard.Extensions.ReflectionExtensions.TypesWithAttribute``1(System.Reflection.Assembly,System.Predicate{``0})" -->
+        <member name="M:SpeckyStandard.Extensions.ReflectionExtensions.TypesWithAttribute``1(System.Reflection.Assembly,System.Predicate{``0})">
+            <summary>
+            Retrieves types that have attribute of type T.
+            </summary>
+            <typeparam name="T">Attribute type</typeparam>
+            <param name="assembly">The assembly to search.</param>
+            <returns>IEnumerable&lt;Type&gt; of types that have the T attribute.</returns>
+        </member>
         <member name="M:SpeckyStandard.Extensions.TimeExtensions.IsNowPast(System.DateTime,System.TimeSpan)">
             <summary>
             Returns a boolean value indicating if the DateTime object is past the current time.
