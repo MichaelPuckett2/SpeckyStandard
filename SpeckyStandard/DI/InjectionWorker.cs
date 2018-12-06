@@ -98,7 +98,7 @@ namespace SpeckyStandard.DI
             {
                 if (parameterInfo.TryGetAttribute(out SpeckConfigurationAutoAttribute speckConfiguration))
                 {
-                    var key = speckConfiguration.Key;
+                    var key = speckConfiguration.ConfigurationKey;
                     if (string.IsNullOrEmpty(key)) key = parameterInfo.Name;
 
                     initializedParameters.Add(SpeckContainer.Instance.GetConfigurationValue(key));
@@ -166,7 +166,7 @@ namespace SpeckyStandard.DI
             var tuples = speckType.GetPropertyAttributeTuples<SpeckConfigurationAutoAttribute>();
             foreach (var tuple in tuples)
             {
-                var key = tuple.Attribute.Key;
+                var key = tuple.Attribute.ConfigurationKey;
                 if (string.IsNullOrEmpty(key)) key = tuple.PropertyInfo.Name;
 
                 var configurationValue = SpeckContainer.Instance.GetConfigurationValue(key);
@@ -186,7 +186,7 @@ namespace SpeckyStandard.DI
 
             foreach (var tuple in tuples)
             {
-                var key = tuple.Attribute.Key;
+                var key = tuple.Attribute.ConfigurationKey;
                 if (string.IsNullOrEmpty(key)) key = tuple.FieldInfo.Name;
 
                 var configurationValue = SpeckContainer.Instance.GetConfigurationValue(key);

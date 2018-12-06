@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using static SpeckyStandard.Logging.Log;
 
 namespace SpeckyStandard.DI
 {
@@ -14,7 +15,7 @@ namespace SpeckyStandard.DI
     public sealed class SpeckContainer
     {
         internal HashSet<InjectionModel> InjectionModels { get; } = new HashSet<InjectionModel>();
-        internal Dictionary<string, object> ConfigurationModels { get; } = new Dictionary<string, object>();
+        internal Dictionary<string, object> ConfigurationDictionary { get; } = new Dictionary<string, object>();
 
         SpeckContainer() { }
         static public SpeckContainer Instance { get; } = new SpeckContainer();
@@ -70,12 +71,12 @@ namespace SpeckyStandard.DI
 
             foreach (var propertyInfo in config.GetType().GetProperties(Constants.BindingFlags))
             {
-                ConfigurationModels[propertyInfo.Name] = propertyInfo.GetValue(config);
+                ConfigurationDictionary[propertyInfo.Name] = propertyInfo.GetValue(config);
             }
 
             foreach (var fieldInfo in config.GetType().GetFields(Constants.BindingFlags))
             {               
-                ConfigurationModels[fieldInfo.Name] = fieldInfo.GetValue(config);
+                ConfigurationDictionary[fieldInfo.Name] = fieldInfo.GetValue(config);
             }
         }
 
@@ -111,9 +112,17 @@ namespace SpeckyStandard.DI
             }
         }
 
-        internal object GetConfigurationValue(string value)
+        internal object GetConfigurationValue(string key)
         {
-            return ConfigurationModels[value];
+            if (ConfigurationDictionary.ContainsKey(key))
+            {
+                return ConfigurationDictionary[key];
+            }
+            else
+            {
+                Print($"{nameof(ConfigurationDictionary)} did not contain a value for {key}", PrintType.DebugWindow);
+                return null;
+            }
         }
 
         /// <summary>
@@ -148,7 +157,7 @@ namespace SpeckyStandard.DI
                     {
                         foreach (var configProperty in configInjectionModel.Type.GetProperties(Constants.BindingFlags))
                         {
-                            if (configProperty.Name == speckConfigurationAutoAttribute.Key)
+                            if (configProperty.Name == speckConfigurationAutoAttribute.ConfigurationKey)
                             {
                                 configInstance = configProperty.GetValue(configInjectionModel.Instance);
                                 break;
@@ -159,7 +168,7 @@ namespace SpeckyStandard.DI
 
                         foreach (var field in configInjectionModel.Type.GetFields(Constants.BindingFlags))
                         {
-                            if (field.Name == speckConfigurationAutoAttribute.Key)
+                            if (field.Name == speckConfigurationAutoAttribute.ConfigurationKey)
                             {
                                 configInstance = field.GetValue(configInjectionModel.Instance);
                                 break;
@@ -168,7 +177,7 @@ namespace SpeckyStandard.DI
                     }
 
                     parameterInstances.Add(configInstance
-                             ?? throw new Exception($"{nameof(GetParameterInstances)} didn't find value for key {speckConfigurationAutoAttribute.Key}.  Check the profile and configuration types to make sure the value was initialized."));
+                             ?? throw new Exception($"{nameof(GetParameterInstances)} didn't find value for key {speckConfigurationAutoAttribute.ConfigurationKey}.  Check the profile and configuration types to make sure the value was initialized."));
                 }
                 else
                 {

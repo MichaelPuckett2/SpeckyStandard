@@ -49,6 +49,22 @@
             </summary>
             <param name="ofType">Optional Speck target used to initialize the value.</param>
         </member>
+        <member name="T:SpeckyStandard.Attributes.SpeckConfigurationAutoAttribute">
+            <summary>
+            Sets the value of a type found via the current configuration based on the name of the property, field, parameter, or supplied key.
+            </summary>
+        </member>
+        <member name="M:SpeckyStandard.Attributes.SpeckConfigurationAutoAttribute.#ctor(System.String)">
+            <summary>
+            Initializes SpeckConfigurationAuto with optional configuration key used to lookup value.
+            </summary>
+            <param name="configurationKey">The configuration key used to look up the configured value. If left empty the name of the property, field, or parameter will be used as the key.</param>
+        </member>
+        <member name="P:SpeckyStandard.Attributes.SpeckConfigurationAutoAttribute.ConfigurationKey">
+            <summary>
+            The configuration key used to look up the configured value.
+            </summary>
+        </member>
         <member name="T:SpeckyStandard.Attributes.SpeckPostAttribute">
             <summary>
             Specky calls this method after initializing all specks in the order of least dependent first and then by Order number if supplied.
