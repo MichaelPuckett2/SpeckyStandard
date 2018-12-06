@@ -20,26 +20,37 @@ namespace SpeckyStandard.DI
         {
             Print("Locating Configurations.", PrintType.DebugWindow);
 
-            var speckyConfigurations = CallingAssembly
-                                      .TypesWithAttribute<SpeckConfigurationAttribute>(speckConfiguration => speckConfiguration.Configuration == GlobalConfiguration.Profile);
+            CallingAssembly
+                .TypesWithAttribute<SpeckConfigurationAttribute>(speckConfiguration => speckConfiguration.Configuration == GlobalConfiguration.Profile)
+                .Log("Injecting Configurations.", PrintType.DebugWindow)
+                .ForEach(InjectNewConfiguration)
+                .Log("Locating Specks.", PrintType.DebugWindow);
 
-            Print("Injecting Configurations.", PrintType.DebugWindow);
+            CallingAssembly
+                .TypesWithAttribute<SpeckAttribute>()
+                .Log("Injecting Specks.", PrintType.DebugWindow)
+                .ForEach(InjectSpeck)
+                .ForEach(RunSpeckPost);
+        }
 
-            foreach (var speckConfiguration in speckyConfigurations)
-                InjectNewConfiguration(speckConfiguration);
+        private static void RunSpeckPost(Type speck)
+        {
+            speck
+                .GetMethods(Constants.BindingFlags)
+                .ForEach((MethodInfo methodInfo) =>
+                {
+                    methodInfo
+                        .TryGetAttribute(out SpeckPostAttribute speckPostAttribute)
+                        .Pulse(True: () => methodInfo.Invoke(SpeckContainer.Instance.GetInstance(speck), null));
+                });
+        }
 
-            Print("Locating Specks.", PrintType.DebugWindow);
-
-            var specks = CallingAssembly
-                        .TypesWithAttribute<SpeckAttribute>();
-
-            Print("Injecting Specks.", PrintType.DebugWindow);
-
-            foreach (var speck in specks)
-                SpeckContainer
-                    .Instance
-                    .HasSpeck(speck)
-                    .Pulse(False: () => InjectNewSpeck(speck));
+        private static void InjectSpeck(Type speck)
+        {
+            SpeckContainer
+                .Instance
+                .HasSpeck(speck)
+                .Pulse(False: () => InjectNewSpeck(speck));
         }
 
         private static void InjectNewConfiguration(Type configurationType)

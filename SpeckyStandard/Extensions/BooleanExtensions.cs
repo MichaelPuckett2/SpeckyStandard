@@ -10,10 +10,11 @@ namespace SpeckyStandard.Extensions
         /// <param name="boolean"></param>
         /// <param name="True">Action to invoke when boolean is true.</param>
         /// <param name="False">Action to invoke when boolean is false.</param>
-        public static void Pulse(this bool boolean, Action True = null, Action False = null)
+        public static bool Pulse(this bool boolean, Action True = null, Action False = null)
         {
             if (boolean) True?.Invoke();
             else False?.Invoke();
+            return boolean;
         }
 
         /// <summary>
