@@ -1,3 +1,4 @@
+# This repo is now obsolete.  https://github.com/MichaelPuckett2/Specky is the replacement.
 # SpeckyStandard
 
 ## Simplified injection:
